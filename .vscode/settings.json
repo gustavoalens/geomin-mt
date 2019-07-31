@@ -1,0 +1,4 @@
+{
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "/home/ctmat/anaconda3/envs/metamat/bin/python"
+}

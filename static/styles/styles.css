@@ -1,0 +1,371 @@
+.map_box {
+    height: 100vh;
+    width: 100%;
+}
+
+.mp0 {
+    margin-right: 0;
+    padding-right: 0;
+}
+
+.map {
+    position: relative;
+    /* margin-top: 0vh; */
+    height: 100%;
+    width: 100%;
+    z-index: 0;
+}
+
+.pop_graficos {
+    position: absolute;
+    /* margin-top: -2vh; */
+    /* height: 2vh; */
+    /* width: 100%; */
+    z-index: 1;
+    bottom: 0;
+    display: block;
+    /* display: flex; */
+    /* align-items: center; */
+    max-height: 100vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+
+}
+
+.graficos {
+    min-height: 30vh;
+    width: 100%;
+}
+
+/* #info {
+    height: 2vh;
+    width: 100%;
+} */
+
+.visoes {
+    top: 2vh;
+    right: 2vh;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0);
+
+}
+
+.visoes button {
+
+  margin: 0.15vh;
+  color: white;
+  font-size: 0.7em;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  background-color: rgba(0,60,136,0.5);
+  border: none;
+  border-radius: 2px;
+
+}
+.visoes button::-moz-focus-inner {
+  border: none;
+  padding: 0;
+}
+.ol-touch .visoes button {
+  font-size: 1.5em;
+}
+.visoes button:hover,
+.visoes button:focus {
+  text-decoration: none;
+  background-color: rgba(0,60,136,0.7);
+}
+
+
+.ol-control button {
+    display: block;
+    margin: 1px;
+    padding: 0;
+    color: rgb(68, 68, 68);
+    font-size: 1.14em;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    height: 1.375em;
+    width: 1.375em;
+    line-height: .4em;
+    /* background-color: rgba(0,60,136,0.5); */
+    background-color: rgba(220,220,220,0.7);
+    border: none;
+    border-radius: 2px;
+}
+
+.ol-control button:hover,
+.ol-control button:focus {
+  text-decoration: none;
+  /* background-color: rgba(0,60,136,0.7); */
+  background-color: rgba(220, 220, 220, 0.9);
+}
+
+.viario {
+    top: 8vh;
+    right: 2vh;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0);
+
+}
+
+.viario button {
+    margin: 0.15vh;
+    color: white;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    background-color: rgba(0,60,136,0.5);
+    border: none;
+    border-radius: 2px;
+
+}
+
+.viario button.selected {
+    text-decoration: none;
+    background-color: rgba(0,60,136,0.7);
+}
+
+.scrolling-box {
+    display: block;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    max-height: 20vh;
+}
+
+.row-forms {
+    display: block;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    max-height: 78.5vh;
+}
+
+.btn-group.special {
+    display: flex;
+}
+
+.special .btn {
+    flex: 1
+}
+
+button.selected {
+    background-color: DarkGrey;
+    color: LightGrey;
+}
+
+.ol-popup {
+    position: absolute;
+    background-color: white;
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    left: -50px;
+    min-width: 80vh;
+    max-height: 60vh;
+    /* max-width: 100vh; */
+    width: auto;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.ol-popup:after, .ol-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.ol-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+.ol-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+/* .ol-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+}
+.ol-popup-closer:after {
+    content: "✖";
+}
+*/
+
+.ol-legenda {
+    top: 25vh;
+    right: 2vh;
+    position: absolute;
+    background-color: white;
+    /* -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2)); */
+    /* filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2)); */
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    min-width: 30vh;
+    min-height: 45vh;
+    max-height: 45vh;
+    display: none;
+
+    /* max-width: 100vh; */
+    /* width: auto; */
+    /* height: auto; */
+    /* overflow-y: scroll; */
+    /* overflow-x: scroll; */
+}
+.box-grad {
+    min-height: 30vh;
+    max-height: 30vh;
+    margin: 1vh;
+    position: relative;
+    display: block;
+}
+.gradient {
+    height: 100%;
+    width: 2vh;
+
+    background-image:
+    linear-gradient(
+        rgb(255, 0, 0),
+        rgb(255, 255, 0),
+        rgb(0, 255, 0)
+        );
+}
+
+.legendas_table {
+    display:table;
+    table-layout: fixed;
+    width: auto;
+    height: 30vh;
+    margin: 1vh;
+    padding:0;
+}
+
+.legendas {
+    /* position: absolute; */
+    display: table-cell;
+}
+{% load static %}
+.loader {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.65);
+    background-image: url("imagens/loading_.gif");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    display: block;
+}
+
+{% load static %}
+
+.line_box {
+    /* width: 1.5em;
+    height: 1.5em; */
+    width: 10%;
+    height: 10%;
+    /* align-items: center; */
+}
+.line_legenda {
+
+    /* background: url("imagens/line.svg") no-repeat top left; */
+    /* background-size: contain; */
+    /* background-repeat: no-repeat; */
+    /* background-attachment: fixed; */
+    /* background-position: center; */
+    /* display: block; */
+
+    /* fill: #693309; */
+}
+
+/* #pop_graf {
+    background-color: rgb(245, 245, 245);
+} */
+
+#btn_graf {
+    display: block;
+    width: 4vh;
+    height: 3vh;
+    margin: 0.5vh
+}
+
+#btn_graf:focus {
+    box-shadow: none !important;
+    outline: 0 !important;
+}
+
+.btn-up {
+    background: url("imagens/but_up.svg") no-repeat;
+    background-color: transparent;
+    background-size: 100% 100%;
+    background-position: center;
+
+}
+
+.btn-down {
+    background: url("imagens/but_down.svg") no-repeat;
+    background-color: transparent;
+    background-size: 100% 100%;
+    background-position: center;
+}
+
+.leg_via-item {
+    display: flex;
+    align-items: center;
+}
+
+.leg_via-txt {
+    margin: 0px;
+    padding: 0;
+
+}
+
+.div-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-left: 1vh;
+    margin-bottom: 1vh;
+}
+
+.info {
+    min-width: 3vh;
+    min-height: 3vh;
+    background: url("imagens/info.svg") no-repeat;
+    background-color: transparent;
+    background-size: 98% 98%;
+    background-position: center;
+}
+
+.menu_control {
+    /* background-color: rgba(42, 73, 112, 0.5); */
+    background-color: rgba(220, 220, 220, 0.8);
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    color: black;
+    text-decoration: none;
+    /* background-color: #007bff; */
+    background-color: rgba(220, 220, 220, 0.8);
+}
+
+/*att */

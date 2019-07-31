@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>METAMAT - Dados abertos sobre Mineração no Estado de Mato Grosso</title>
+        {% load static %}
+        {% load crispy_forms_tags %}
+
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css'%}">
+        <link rel="stylesheet" href="{% static 'js/node_modules/ol/ol.css'%}" type="text/css">
+        <link rel="stylesheet" href="{% static 'styles/styles.css'%}" type="text/css">
+        <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+
+
+        <script src="{% static 'js/ol/ol.js'%}"></script>
+        <script src="{% static 'js/turf.min.js'%}"></script>
+        <script src="{% static 'js/jquery/jquery.js'%}"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+        <script type="text/javascript">
+            let URL = "{% url 'index' %}"
+            let resultado_analise = {{ resultado_analise|safe }}
+            let visao_return = {{ visao_return|safe }};
+            let pesquisado_analise = {{ pesquisado_analise|safe }}
+            let titulos = {{ titulos|safe }}
+            let substratos_regiao = {{ substratos_regiao|safe }}
+            let form_selecionado = {{ form_selecionado|safe }}
+            let dados_apr = {{ dados_apr|safe }}
+
+            let vis_meso = null
+            let vis_meso_res = null
+            let vis_micro = null
+            let vis_micro_res = null
+            let vis_prov = null
+            let vis_muni = null
+            let vis_muni_res = null
+
+            let nomes_sisvs = ['Rodovias', 'Ferrovias', 'Hidrovias', 'Aerodromos']
+            let rodovias = null
+            let ferrovias = null
+            let hidrovias = null
+            let aerodromos = null
+
+            let temporal = null
+        </script>
+
+        {% comment %} ToDO: Mudar para text/javascript todas
+            iniciar o index utilizando $(document).ready(main)
+                p isso, deixar no index somente as execuçoes, salvar em outros scripts as funções, conforme uso {% endcomment %}
+        <script type="text/javascript" src="{% static 'js/funcs_aux.js'%}"></script>
+        <script type="module" src="{% static 'js/index.js'%}"></script>
+        <script type="module" src="{% static 'js/forms.js'%}"></script>
+
+    </head>
+    <body>
+        <style></style>
+        <div id="loader" class="loader" style="display>:none"></div>
+        <div class="container-fluid">
+            <div class="row">
+                <nav class="col-md-3 d-block bg-light sidebar" style="position: relative">
+                    <div class="row">
+                        <div class="col-sm-12 text-center">
+                            <img src="{%static 'imagens/logo.png'%}" class="img-circle" alt="Logo da METAMAT">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class ="col-sm-12" style="margin-bottom: 2vh">
+                            <div class="btn-group special flex-wrap" role="group" style="width: 100%">
+                                <button id="btn_analisar" type="button" class="btn btn-default">Análise</button>
+                                <button id="btn_titulos" type="button" class="btn btn-default">Títulos</button>
+                                <button id="btn_dados" type="button" class="btn btn-default">Download</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row row-forms">
+                        <div class ="col-sm-12">
+                            <div id="formDados" class="col-sm-12 form-group" style="display:none">
+                                <form id="fDownload"method="get">
+                                    {% csrf_token %}
+                                    {{ form_dados.dm|as_crispy_field }}
+                                    <div class="scrolling-box" id="demografico" class="bg-light" style="display:none; margin-left:1.2vh">
+                                        {{ form_dados.dm_pop_total|as_crispy_field }}
+                                        <div id="demografico_opc">
+                                            {{ form_dados.dm_pop_urb|as_crispy_field }}
+                                            {{ form_dados.dm_pop_ru|as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    {{ form_dados.ec|as_crispy_field }}
+                                    <div class="scrolling-box" id="economico" style="display:none; margin-left:1.2vh">
+                                        {{ form_dados.ec_todos|as_crispy_field }}
+                                        <div id="economico_opc">
+                                            {{ form_dados.ec_pib_pc|as_crispy_field }}
+                                            {{ form_dados.ec_receitas_fontext|as_crispy_field }}
+                                            {{ form_dados.ec_receitas|as_crispy_field }}
+                                            {{ form_dados.ec_despesas|as_crispy_field }}
+                                            {{ form_dados.ec_pop_ativa_18mais|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_agropecuario|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_comercio|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_construcao|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_mineral|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_industria_utilpub|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_servic|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_industria_transf|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_grau_form|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_fundamental|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_medio|as_crispy_field }}
+                                            {{ form_dados.ec_ocup_superior|as_crispy_field }}
+                                            {{ form_dados.ec_atv_1maior_valor|as_crispy_field }}
+                                            {{ form_dados.ec_atv_2maior_valor|as_crispy_field }}
+                                            {{ form_dados.ec_atv_3maior_valor|as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    {{ form_dados.sc|as_crispy_field }}
+                                    <div class="scrolling-box" id="socioeconomico" style="display:none; margin-left:1.2vh">
+                                        {{ form_dados.sc_todos|as_crispy_field }}
+                                        <div id="socioeconomico_opc">
+                                            {{ form_dados.sc_pop_ocupada|as_crispy_field }}
+                                            {{ form_dados.sc_idhm|as_crispy_field }}
+                                            {{ form_dados.sc_idhm_renda|as_crispy_field }}
+                                            {{ form_dados.sc_idhm_longevidade|as_crispy_field }}
+                                            {{ form_dados.sc_idhm_educacao|as_crispy_field }}
+                                            {{ form_dados.sc_expc_vida|as_crispy_field }}
+                                            {{ form_dados.sc_prob_60anos|as_crispy_field }}
+                                            {{ form_dados.sc_expc_anos_estudo18|as_crispy_field }}
+                                            {{ form_dados.sc_renda_pc|as_crispy_field }}
+                                            {{ form_dados.sc_salario_trab_form|as_crispy_field }}
+                                            {{ form_dados.sc_prop_extr_pobre|as_crispy_field }}
+                                            {{ form_dados.sc_prop_pobre|as_crispy_field }}
+                                            {{ form_dados.sc_prop_vuln_pobre|as_crispy_field }}
+                                            {{ form_dados.sc_taxa_analfab_15mais|as_crispy_field }}
+                                            {{ form_dados.sc_ideb_inicias|as_crispy_field }}
+                                            {{ form_dados.sc_ideb_finais|as_crispy_field }}
+                                            {{ form_dados.sc_perc_pop_agua_enc|as_crispy_field }}
+                                            {{ form_dados.sc_perc_pop_coleta_lixo|as_crispy_field }}
+                                            {{ form_dados.sc_perc_pop_eletricidade|as_crispy_field }}
+                                            {{ form_dados.sc_esg_sanit_adequado|as_crispy_field }}
+                                            {{ form_dados.sc_perc_pop_esg_inadequado|as_crispy_field }}
+                                            {{ form_dados.sc_perc_urban_vias_public|as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    {{ form_dados.ar|as_crispy_field }}
+                                    <div class="scrolling-box" id="arrecadacao" style="display:none; margin-left:1.2vh">
+                                        {{ form_dados.ar_subs|as_crispy_field }}
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            {{ form_dados.ano_i|as_crispy_field }}
+                                        </div>
+                                        <div class="col-6">
+                                            {{ form_dados.ano_f|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="check" name="check" value="0"/>
+                                    <input type="hidden" id="ids" name="ids"/>
+                                    <input type="hidden" id="visao" name="visao" value="0"/>
+                                    <button type="submit" class="btn">Pesquisar</button>
+                                </form>
+                            </div>
+                            <div id="formTitulo" class="col-sm-12 form-group" style="display:none">
+                                <form id="fTitulo" method="post">
+                                    {% csrf_token %}
+
+                                    {{ form_titulos.pesq_num_ano|as_crispy_field }}
+                                    <div id="tit_num_proc" style="padding:0.5vh; margin-bottom:0.5vh; display:none">
+                                        {{ form_titulos.numero|as_crispy_field }}
+                                        {{ form_titulos.ano|as_crispy_field }}
+                                    </div>
+
+                                    {{ form_titulos.pesq_pf_pj|as_crispy_field }}
+                                    <div id="tit_pf_pj" style="padding:0.5vh; margin-bottom:0.5vh; display:none;">
+                                        {{ form_titulos.pes|as_crispy_field }}
+                                        {{ form_titulos.pessoa_fisica|as_crispy_field }}
+                                        {{ form_titulos.pessoa_juridica|as_crispy_field }}
+                                    </div>
+
+                                    <div id="tit_sub_uso" style="padding:0.5vh; margin-bottom:0.5vh">
+
+                                        {{ form_titulos.form_subs.management_form|crispy }}
+                                        {{ form_titulos.form_usos.management_form|crispy }}
+                                        <div id="formset_subs">
+                                        </div>
+
+                                        <input type="button" class='btn' style="margin-bottom:1.5rem" value="Adicionar Substrato" id="add_sub">
+
+                                        <div id="formset_usos">
+                                        </div>
+
+                                        <input type="button" class='btn' style="margin-bottom:1.5rem" value="Adicionar Tipo de uso" id="add_uso">
+                                    </div>
+
+
+
+                                    <input type="hidden" id="check" name="check" value="1"/>
+                                    <input type="hidden" id="ids_tit" name="ids_tit"/>
+                                    <input type="hidden" id="visao_tit" name="visao" value="0"/>
+                                    <button type="submit" class="btn">Pesquisar</button>
+                                </form>
+                            </div>
+
+                            <div id="formAnalisar" class="col-sm-12 form-group" style="display:none">
+                                <form id="fAnalisar" method="get">
+                                    {% csrf_token %}
+                                    {{ form_analise.tipo_analise|as_crispy_field }}
+
+                                    <div id="analisar_cruzar" style="display:none">
+                                        {{ form_analise.subs_cr|as_crispy_field }}
+                                        {{ form_analise.dados|as_crispy_field }}
+                                        {{ form_analise.ano_i|as_crispy_field }}
+                                        {{ form_analise.ano_f|as_crispy_field }}
+                                    </div>
+
+                                    <div id="analisar_apresentar" style="display:none">
+                                        {{ form_analise.variavel|as_crispy_field }}
+
+                                        <div id="analisar_apr_opcs_arr" style="display:none">
+                                            {{ form_analise.opc_arr|as_crispy_field }}
+                                        </div>
+                                        <div id="analisar_apr_subs" style="display:none">
+                                            {{ form_analise.subs_ap|as_crispy_field }}
+                                        </div>
+                                        <div id="analisar_apr_ano" style="display:none">
+                                            {{ form_analise.ano_v|as_crispy_field }}
+                                        </div>
+
+                                    </div>
+
+                                    <div id="analisar_temporal" style="display:none">
+
+                                        {{ form_analise.form_vars.management_form|crispy }}
+                                        <div id="formset_vars">
+                                        </div>
+                                        <input type="button" class='btn' style="margin-bottom:1.5rem" value="Adicionar Variável" id="add_var">
+
+                                        {{ form_analise.ano_i_t|as_crispy_field }}
+                                        {{ form_analise.ano_f_t|as_crispy_field }}
+                                    </div>
+
+                                    <input type="hidden" id="check" name="check" value="2"/>
+                                    <input type="hidden" id="visao_an" name="visao" value="-2"/>
+                                    <button type="submit" class="btn">Pesquisar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                <div class="div-info">
+                    <button class="btn info" data-toggle="modal" data-target="#modal-info"></button>
+                </div>
+                </nav>
+                <div class="col-md-9 px-0">
+                <!-- <div class="col-sm-10"> -->
+
+                    <div class="map_box">
+                        <nav class="navbar navbar-expand-lg navbar-light menu_control">
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                            <ul class="navbar-nav mr-auto">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarVisao" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Selecionar subdivisão
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <a id="nv-vis_mac" class="dropdown-item" href="#">Macrorregiões</a>
+                                        <a id="nv-vis_mic" class="dropdown-item" href="#">Microrregiões</a>
+                                        <a id="nv-vis_pro" class="dropdown-item" href="#">Províncias</a>
+                                        <a id="nv-vis_mun" class="dropdown-item" href="#">Municípios</a>
+                                    {% comment %} <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Something else here</a>
+                                    </div> {% endcomment %}
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarViario" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Selecionar sistema viário
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <a id="nv-via_rodo" class="dropdown-item" href="#">Rodovias</a>
+                                        <a id="nv-via_ferro" class="dropdown-item" href="#">Ferrovias</a>
+                                        <a id="nv-via_hidro" class="dropdown-item" href="#">Hidrovias</a>
+                                        <a id="nv-via_aero" class="dropdown-item" href="#">Aerodromos</a>
+                                    <div class="dropdown-divider"></div>
+                                        <a id="nv-via_limpar" class="dropdown-item" href="#">Limpar mapa</a>
+                                    </div>
+                                </li>
+                                <li class="nav-item">
+                                    <a id="nv-limpar" class="nav-link" href="#">Limpar resultados</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div id="map" class="map" >
+                        </div>
+                        <div id="pop_graf" class="col-md-12 pop_graficos card" style="display: none">
+                            <div class="row">
+                                <div class="col-md-12" style="display: flex; justify-content: center">
+                                    <button id="btn_graf" class="btn btn-up" type="button" data-toggle="collapse" data-target="#graficos" aria-expanded="false" aria-controls="graficos"></button>
+                                </div>
+                            </div>
+                            <div id="graficos" class="row collapse card-body">
+                                <div id="grafico_" class="graficos col-md-12">
+                                    Clique em uma região para apresentar o gráfico
+                                </div>
+
+                                <div id="grafico_uf" class="graficos col-md-12">
+
+                                </div>
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="popup" class="ol-popup">
+                        <button href="#" id="popup-closer" class="close"><span aria-hidden="true">×</span></button>
+                        <div id="popup-content"></div>
+                    </div>
+                    <div id="legenda" class="ol-legenda">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5 id='legenda_tit'>Titulo da pesquisa</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="color_ramp" class="col-md-1 gradient box-grad"></div>
+                            <div class="col-md-6 legendas_table">
+                                    <div style="display: table-row">
+                                        <div id="legenda_mx" style="display: table-cell; vertical-align:top">
+                                            Maior
+                                        </div>
+                                    </div>
+
+                                    <div style="display: table-row">
+                                        <div id="legenda_md" style="display: table-cell; vertical-align:middle">
+                                            Medio
+                                        </div>
+                                    </div>
+
+                                    <div style="display: table-row">
+                                        <div id="legenda_mn" style="display: table-cell; vertical-align:bottom">
+                                            Menor
+                                        </div>
+                                    </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div id="legenda_via" class="ol-legenda" style="display:none">
+                        <h5 id="legenda_via_tit"></h5>
+                        <div id="legenda_via_itens">
+                        <!-- <div class="row leg_via-item" id="add_leg_viario">
+                            <div id="line_img" class="col-md-3 line_box"></div>
+                            <div class="col-md-9 leg_via-txt"> Teste </div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="empty_formset_subs" style="display:none;">
+            <div id="box_fsubs__prefix__" class="row d-flex justify-content-start">
+                {{ form_titulos.form_subs.empty_form|crispy }}
+                <div class="align-self-end">
+                    <input type="button" class="btn btn-danger" value="X" id="rm_sub" style="margin-bottom: 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <div id="empty_formset_usos" style="display:none;">
+            <div id="box_fusos__prefix__" class="row d-flex justify-content-start">
+                {{ form_titulos.form_usos.empty_form|crispy }}
+                <div class="align-self-end">
+                    <input type="button" class='btn btn-danger' value="X" id="rm_uso" style="margin-bottom: 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <div id="empty_formset_vars" style="display:none;">
+            <div id="box_fvars__prefix__" class="row">
+                <div class=col-md-12>
+                    <div class="row d-flex justify-content-start">
+                        <div class="col-md-10" style="margin: 0; padding: 0;">
+                            {% crispy form_analise.form_vars.empty_form %}
+
+
+                        </div>
+                        <div class="col-md-1 align-self-end" style="margin: 0; padding:0;">
+                            <input type="button" class="btn btn-danger" value="X" id="rm_var" style="margin-bottom: 1rem;">
+                        </div>
+                    </div>
+
+                    <div class = "row">
+                        <div id="analisar_temp_opcs_arr__prefix__" style="display:none">
+                            {{ form_analise.opc_arr|as_crispy_field }}
+                        </div>
+                        <div id="analisar_temp_subs__prefix__" style="display:none">
+                            {{ form_analise.subs_ap|as_crispy_field }}
+                        </div>
+                        <div id="analisar_temp_ano__prefix__" style="display:none">
+                            {{ form_analise.ano|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="modal-info" class="modal fade modal-info" tabindex="-1" role="dialog" aria-labeledby="infoModal" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Informações</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                        </p>
+                        <p>
+                            Os tópicos a seguir estão as descrições e fontes dos dados, agrupadas, disponibilizados pelo sistema:
+                        </p>
+                        <h4><b></b></h4>
+                        <div id="info-accordion">
+
+                            <div class="card">
+                                <div class="card-header" id="vars-heading">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#vars-content" aria-expanded="false" aria-controls="vars-content">
+                                            Variáveis disponíveis para download e análise
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="vars-content" class="collapse" aria-labelledby="vars-heading" data-parent="#info-accordion">
+                                    <div class="card-body">
+                                        <div id="vars-accordion">
+                                            <div class="card">
+                                                <div class="card-header" id="arrecadacao-heading">
+                                                    <h5 class="mb-0">
+                                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#arrecadacao-content" aria-expanded="false" aria-controls="arrecadacao-content">
+                                                            Tabelas de Arredacação
+                                                        </button>
+                                                    </h5>
+                                                </div>
+                                                <div id="arrecadacao-content" class="collapse" aria-labelledby="arrecadacao-heading" data-parent="#vars-accordion">
+                                                    <p><b>Arrecadação CFEM</b>
+                                                         - Valor, em reais, arrecadado para taxa de Compensação Financeira pela Exploração de Recursos Minerais (CFEM) por substrato. <br>
+                                                        Fonte: Valores extraídos do sistemas de relatórios do DNPM (Departamento Nacional de Produção Mineral). Acessível <a href="https://sistemas.dnpm.gov.br/arrecadacao/extra/Relatorios/arrecadacao_cfem_substancia.aspx" target="_blank">aqui</a>.
+
+                                                    </p>
+                                                    <p><b>Quantidade de substrato comercializada</b>
+                                                         - Volume e/ou massa registrada na arrecadação CFEM por substrato. <br>
+                                                         Fonte: Valores extraídos do sistemas de relatórios do DNPM (Departamento Nacional de Produção Mineral). Acessível <a href="https://sistemas.dnpm.gov.br/arrecadacao/extra/Relatorios/arrecadacao_cfem_substancia.aspx" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Arrecadação TAH</b>
+                                                         - Valor, em reias, arrecadado pela Taxa Anual por Hectare (TAH).<br>
+                                                         Fonte: Dados disponíveis pelo Portal Brasileiro de Dados Abertos. Acessível <a href="http://dados.gov.br/dataset/taxa-anual-por-hectare-tah" target="_blank">aqui</a>.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header" id="demografico-heading">
+                                                    <h5 class="mb-0">
+                                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#demografico-content" aria-expanded="false" aria-controls="demografico-content">
+                                                            Tabela Demográfico
+                                                        </button>
+                                                    </h5>
+                                                </div>
+                                                <div id="demografico-content" class="collapse" aria-labelledby="demografico-heading" data-parent="#vars-accordion">
+                                                    <p><b>População</b>
+                                                         - Total de população em uma região ou município.<br>
+                                                        Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil e Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI).
+                                                        Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a> e <a href="https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf" target="_blank">aqui</a>, respectivamente.
+
+                                                    </p>
+                                                    <p><b>População urbana</b>
+                                                         - Total de população que se encontra em vivência na zona urbana em uma região ou município.<br>
+                                                        Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População rural</b>
+                                                        - Total de população que se encontra em vivência na zona urbana em uma região ou município.<br>
+                                                      Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header" id="socioeconomico-heading">
+                                                    <h5 class="mb-0">
+                                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#socioeconomico-content" aria-expanded="false" aria-controls="socioeconomico-content">
+                                                            Tabela Socioeconômico
+                                                        </button>
+                                                    </h5>
+                                                </div>
+                                                <div id="socioeconomico-content" class="collapse" aria-labelledby="socioeconomico-heading" data-parent="#vars-accordion">
+                                                    <p><b>IDHM</b>
+                                                        - Índice de Desenvolvimento Humano Municipal. Média geométrica dos índices das dimensões Renda, Educação e Longevidade, com pesos iguais.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>IDHM Renda</b>
+                                                        - Índice da dimensão Renda que é um dos 3 componentes do IDHM.
+                                                         É obtido a partir do indicador Renda per capita, através da fórmula: [ln (valor observado do indicador) - ln (valor mínimo)] / [ln (valor máximo) - ln (valor mínimo)], onde os valores mínimo e máximo são R$ 8,00 e R$ 4.033,00 (a preços de agosto de 2010).<br>
+                                                        Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>IDHM Longevidade</b>
+                                                        - Índice da dimensão Longevidade que é um dos 3 componentes do IDHM.
+                                                        É obtido a partir do indicador Esperança de vida ao nascer,
+                                                        através da fórmula: [(valor observado do indicador) - (valor mínimo)] / [(valor máximo) - (valor mínimo)], onde os valores mínimo e máximo são 25 e 85 anos, respectivamente.<br>
+                                                        Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>IDHM Educação</b>
+                                                         - Índice sintético da dimensão Educação que é um dos 3 componentes do IDHM.
+                                                         É obtido através da média geométrica do subíndice de frequência de crianças e jovens à escola, com peso de 2/3, e do subíndice de escolaridade da população adulta, com peso de 1/3.<br>
+                                                        Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Expectativa de vida</b>
+                                                        - Número médio de anos que as pessoas deverão viver a partir do nascimento,
+                                                        se permanecerem constantes ao longo da vida o nível e o padrão de mortalidade por idade prevalecentes no ano do Censo.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Probabilidade alcançar 60 anos</b>
+                                                        - Probabilidade de uma criança recém-nascida viver até os 60 anos, se permanecerem constantes ao longo da vida o nível e o padrão de mortalidade por idade prevalecentes no ano do Censo.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Expectativa de anos de estudo aos 18 anos</b>
+                                                        - Número médio de anos de estudo que uma geração de crianças que ingressa na escola deverá completar ao atingir 18 anos de idade, se os padrões atuais se mantiverem ao longo de sua vida escolar.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Renda per capita</b>
+                                                        - Razão entre o somatório da renda de todos os indivíduos residentes em domicílios particulares permanentes e o número total desses indivíduos. Valores em reais de 01/agosto de 2010.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Salario médio do trabalhador formal</b>
+                                                        - Número de salários mínimos médio do trabalhor formal<br>
+                                                       Fonte: IBGE - Cadastro Central de Empresas. Acessível <a href="https://sidra.ibge.gov.br/tabela/1685" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População em extrema pobreza (%)</b>
+                                                        - Proporção dos indivíduos com renda domiciliar per capita igual ou inferior a R$ 70,00 mensais, em reais de agosto de 2010. O universo de indivíduos é limitado àqueles que vivem em domicílios particulares permanentes.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População em pobreza (%)</b>
+                                                        - Proporção dos indivíduos com renda domiciliar per capita igual ou inferior a R$ 140,00 mensais, em reais de agosto de 2010. O universo de indivíduos é limitado àqueles que vivem em domicílios particulares permanentes.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População em vulnerabilidade a pobreza (%)</b>
+                                                        - Proporção dos indivíduos com renda domiciliar per capita igual ou inferior a R$ 255,00 mensais, em reais de agosto de 2010, equivalente a 1/2 salário mínimo nessa data. O universo de indivíduos é limitado àqueles que vivem em domicílios particulares permanentes.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Analfabetismo aos 15 anos ou mais (%)</b>
+                                                        - Razão entre a população de 15 anos ou mais de idade que não sabe ler nem escrever um bilhete simples e o total de pessoas nesta faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>IDEB anos iniciais</b>
+                                                        - Indice de Desenvolvimento da Educação Básica do 4º e 5º ano<br>
+                                                       Fonte: Portal Brasileiro de Dados Abertos - Ministério da Educação. Acessível <a href="http://dados.gov.br/dataset/ideb-por-municipios" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>IDEB anos finais</b>
+                                                        - Indice de Desenvolvimento da Educação Básica do 8º e 9º ano<br>
+                                                       Fonte: Portal Brasileiro de Dados Abertos - Ministério da Educação. Acessível <a href="http://dados.gov.br/dataset/ideb-por-municipios" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População com agua encanada (%)</b>
+                                                        - Razão entre a população que vive em domicílios particulares permanentes com água canalizada para um ou mais cômodos e a população total residente em domicílios particulares permanentes multiplicado por 100.
+                                                        A água pode ser proveniente de rede geral, de poço, de nascente ou de reservatório abastecido por água das chuvas ou carro-pipa.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População com coleta lixo (%)</b>
+                                                        - Razão entre a população que vive em domicílios com coleta de lixo e a população total residente em domicílios particulares permanentes multiplicado por 100. Estão incluídas as situações em que a coleta de lixo realizada diretamente por empresa pública ou privada, ou o lixo é depositado em caçamba, tanque ou depósito fora do domicílio, para posterior coleta pela prestadora do serviço. São considerados apenas os domicílios particulares permanentes localizados em área urbana.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População com eletricidade (%)</b>
+                                                        - Razão entre a população que vive em domicílios particulares permanentes com iluminação elétrica e a população total residente em domicílios particulares permanentes multiplicado por 100.
+                                                        Considera-se iluminação proveniente ou não de uma rede geral, com ou sem medidor.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População com esgoto sanitário adequado (%)</b>
+                                                        - Razão entre a população que vive em domicílios particulares permanentes com água encanada em pelo menos um de seus cômodos e com banheiro exclusivo e a população total residente em domicílios particulares permanentes multiplicado por 100. A água pode ser proveniente de rede geral, de poço, de nascente ou de reservatório abastecido por água das chuvas ou carro-pipa. Banheiro exclusivo é definido como cômodo que dispõe de chuveiro ou banheira e aparelho sanitário.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População com esgoto sanitario inadequado (%)</b>
+                                                        - Razão entre as pessoas que vivem em domicílios cujo abastecimento de água não provem de rede geral e cujo esgotamento sanitário não é realizado por rede coletora de esgoto ou fossa séptica e a população total residente em domicílios particulares permanentes multiplicado por 100.
+                                                        São considerados apenas os domicílios particulares permanentes.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Urbanização das vias públicas (%)</b>
+                                                        - <br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="card-header" id="economico-heading">
+                                                    <h5 class="mb-0">
+                                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#economico-content" aria-expanded="false" aria-controls="economico-content">
+                                                            Tabela Econômico
+                                                        </button>
+                                                    </h5>
+                                                </div>
+                                                <div id="economico-content" class="collapse" aria-labelledby="economico-heading" data-parent="#vars-accordion">
+                                                    <p><b>PIB per capita</b>
+                                                        - Razão entre o Produto Interno Bruto e a população<br>
+                                                       Fonte: IBGE. Acessível <a href="https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9088-produto-interno-bruto-dos-municipios" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Receitas</b>
+                                                        - Total de receitas realizadas<br>
+                                                       Fonte: Dados disponíveis por Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI). Acessível <a href="https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Despesas</b>
+                                                        - Total de desespesas pagas<br>
+                                                       Fonte: Dados disponíveis por Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (SICONFI). Acessível <a href="https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ativa maior de 18 anos</b>
+                                                        - Corresponde ao número de pessoas nessa faixa etária que, na semana de referência do Censo,
+                                                        encontravam-se ocupadas no mercado de trabalho ou que, encontrando-se desocupadas,
+                                                        tinham procurado trabalho no mês anterior à data da pesquisa. <br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada</b>
+                                                        - Total de pessoas de 18 anos ou mais de idade ocupadas em qualquer setor.<br>
+                                                       Fonte: IBGE - Cadastro Central de Empresas. Acessível <a href="https://sidra.ibge.gov.br/tabela/1685" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor agropecuario (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas no setor agropecuário e o número total de pessoas ocupadas nessa faixa etária.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor comercial (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas no setor de comércio e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor de construção (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas no setor de construção e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor mineral (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas no setor extrativo mineral e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor de industria de utilidade pública (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas nos setor de serviços industriais de utilidade pública e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100. Esse setor inclui as atividades constantes das seções D e E do CNAE DOM 2.0: geração, transmissão e distribuição de eletricidade e gás; captação, tratamento e distribuição de água; esgoto e atividades relacionadas; coleta, tratamento e disposição de resíduos e recuperação de materiais; descontaminação e outros serviços de gestão de resíduos.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor de industria de transformação (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas na indústria de transformação e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada no setor de serviços (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas no setor de serviços e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>Grau de formalização do trabalho das pessoas ocupadas (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais formalmente ocupadas e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100. Foram considerados como formalmente ocupados os empregados com carteira de trabalho assinada, os militares do exército, da marinha, da aeronáutica, da polícia militar ou do corpo de bombeiros, os empregados pelo regime jurídico dos funcionários públicos, assim como os empregadores e trabalhadores por conta própria que eram contribuintes de instituto de previdência oficial.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada com ensino fundamental completo (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas que já concluíram o ensino fundamental (regular seriado, regular não seriado, EJA ou supletivo) e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada com ensino médio completo (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas que já concluíram o ensino médio (regular seriado, regular não seriado, EJA ou supletivo) e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100. Foram consideradas como já tendo concluído o médio aquelas pessoas que frequentavam a 4ª série desse nível de ensino.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                    </p>
+                                                    <p><b>População ocupada com ensino superior completo (%)</b>
+                                                        - Razão entre o número de pessoas de 18 anos ou mais de idade ocupadas e que já concluíram a graduação do ensino superior e o número total de pessoas ocupadas nessa faixa etária multiplicado por 100.<br>
+                                                       Fonte: Dados disponíveis por Atlas do Desenvolvimento Humano no Brasil. Acessível <a href="http://www.atlasbrasil.org.br/2013/pt/download/" target="_blank">aqui</a>.
+                                                   </p>
+                                                   <p><b>Atividade com maior valor adicionado bruto</b>
+                                                       - Tipo de atividade que gera o maior valor Adicionado Bruto (VAB) ao PIB do município<br>
+                                                      Fonte: IBGE. Acessível <a href="https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9088-produto-interno-bruto-dos-municipios" target="_blank">aqui</a>.
+                                                  </p>
+                                                  <p><b>Atividade com segundo maior valor adicionado bruto</b>
+                                                      - Tipo de atividade que gera o segundo maior valor Adicionado Bruto (VAB) ao PIB do município<br>
+                                                     Fonte: IBGE. Acessível <a href="https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9088-produto-interno-bruto-dos-municipios" target="_blank">aqui</a>.
+                                                 </p>
+                                                 <p><b>Atividade com terceiro maior valor adicionado bruto</b>
+                                                     - Tipo de atividade que gera o terceiro maior valor Adicionado Bruto (VAB) ao PIB do município<br>
+                                                    Fonte: IBGE. Acessível <a href="https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9088-produto-interno-bruto-dos-municipios" target="_blank">aqui</a>.
+                                                </p>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+
+
+
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header" id="sisv-heading">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#sisv-content" aria-expanded="false" aria-controls="sisv-content">
+                                            Dados dos sistemas viários
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="sisv-content" class="collapse" aria-labelledby="sisv-heading" data-parent="#info-accordion">
+                                    <div class="card-body">
+                                        <p><b>Rodovias</b>
+                                            - Sistema viário de rodovias do estado de Mato Grosso<br>
+                                           Fonte: Base de Dados Georreferenciados PNLT 2010 (Minstério da Infraestrutura). Acessível <a href="http://www.transportes.gov.br/conteudo/2822-base-de-dados-georreferenciados-pnlt-2010" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Ferrovias</b>
+                                            - Sistema viário de ferrovias do estado de Mato Grosso<br>
+                                           Fonte: Base de Dados Georreferenciados PNLT 2010 (Minstério da Infraestrutura). Acessível <a href="http://www.transportes.gov.br/conteudo/2822-base-de-dados-georreferenciados-pnlt-2010" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Hidrovias</b>
+                                            - Sistema viário de hidrovias do estado de Mato Grosso<br>
+                                           Fonte: Base de Dados Georreferenciados PNLT 2010 (Minstério da Infraestrutura). Acessível <a href="http://www.transportes.gov.br/conteudo/2822-base-de-dados-georreferenciados-pnlt-2010" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Aerodromos</b>
+                                            - Aerodromos encontrados no sistema viário de aerovias do estado de Mato Grosso<br>
+                                           Fonte: Base de Dados Georreferenciados PNLT 2010 (Minstério da Infraestrutura). Acessível <a href="http://www.transportes.gov.br/conteudo/2822-base-de-dados-georreferenciados-pnlt-2010" target="_blank">aqui</a>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header" id="reg-heading">
+                                    <h5 class="mb-0">
+                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#reg-content" aria-expanded="false" aria-controls="reg-content">
+                                            Dados das subdivisões do estado de Mato Grosso
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="reg-content" class="collapse" aria-labelledby="reg-heading" data-parent="#info-accordion">
+                                    <div class="card-body">
+                                        <p><b>Macrorregiões</b>
+                                            - Divisão dos agrupamentos macrorregionais do estado de Mato Grosso<br>
+                                           Fonte: Bases cartográficas do instituto Brasileiro de Geografia e Estatística (IBGE), 2015. Acessível <a href="ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2015/UFs/MT/" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Microrregiões</b>
+                                            - Divisão dos agrupamentos microrregionais do estado de Mato Grosso<br>
+                                           Fonte: Bases cartográficas do instituto Brasileiro de Geografia e Estatística (IBGE), 2015. Acessível <a href="ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2015/UFs/MT/" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Províncias</b>
+                                            - <br>
+                                           Fonte: . Acessível <a href="" target="_blank">aqui</a>.
+                                        </p>
+                                        <p><b>Municípios</b>
+                                            - Divisão dos municípios do estado de Mato Grosso<br>
+                                           Fonte: Bases cartográficas do instituto Brasileiro de Geografia e Estatística (IBGE), 2015. Acessível <a href="ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2015/UFs/MT/" target="_blank">aqui</a>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- att -->
+
+
+
+
+
+    </body>
+</html>
