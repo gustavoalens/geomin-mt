@@ -1,6 +1,5 @@
 ////# Controle dos formulários de pesquisa #////
 
-
 // apresentar formulário conforme selecionado pelo usuário
 $('#btn_dados').click(function(){
     $('#btn_dados').removeClass('selected');
