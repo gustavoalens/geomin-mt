@@ -34,13 +34,7 @@
         {% comment %} ToDO: Mudar para text/javascript todas
             iniciar o index utilizando $(document).ready(main)
                 p isso, deixar no index somente as execuçoes, salvar em outros scripts as funções, conforme uso {% endcomment %}
-        <script type="text/javascript" src="{% static 'js/vars_global.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/funcs_aux.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/forms.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/styles_map.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/layers.js'%}"></script>
-        <script type="text/javascript" src="{% static 'js/graph.js'%}"></script>
-        <script type="module" src="{% static 'js/index.js'%}"></script>
+        
 
     </head>
     <body>
@@ -753,7 +747,13 @@
 
 
 
-
+    <script type="text/javascript" src="{% static 'js/vars_global.js'%}"></script>
+    <script type="text/javascript" src="{% static 'js/funcs_aux.js'%}"></script>
+    <script type="text/javascript" src="{% static 'js/forms.js'%}"></script>
+    <script type="text/javascript" src="{% static 'js/styles_map.js'%}"></script>
+    <script type="text/javascript" src="{% static 'js/layers.js'%}"></script>
+    <script type="text/javascript" src="{% static 'js/graph.js'%}"></script>
+    <script type="module" src="{% static 'js/index.js'%}"></script>
 
     </body>
 </html>

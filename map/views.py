@@ -420,11 +420,10 @@ def index(request):
                                 reg_dados[r.id]['tah'] = [tah_['valorCobrado'], tah_['valorPago']]
 
                         # filtrando as cidades contidas em cada região p/ CFEM e demais dados
-                        cid = get_cidades(r, visao)
-                        # if visao != 4:
-                        #     cid = cidades.objects.filter(geom__contained=r.geom)
-                        # else:
-                        #     cid = r
+                        if visao != 4:
+                            cid = cidades.objects.filter(geom__contained=r.geom)
+                        else:
+                            cid = r
 
                         anos = [r for r in range(int(request.GET['ano_i']), int(request.GET['ano_f']) + 1)]
                         for ano in anos:
@@ -479,9 +478,6 @@ def index(request):
                                         ocup_medio=ExpressionWrapper((F('ocup_medio') / 100) * F('pop_ativa_18mais'), output_field=FloatField()),
                                         ocup_superior=ExpressionWrapper((F('ocup_superior') / 100) * F('pop_ativa_18mais'), output_field=FloatField()),
                                     )
-
-                                # montar annotate com os calculos já
-                                # ec = economia.objects.filter(cidade__in=cid, ano=ano)
 
                                 if ec:
                                     if ano not in reg_dados[r.id]:
@@ -590,28 +586,22 @@ def index(request):
 
 
                                     reg_dados[r.id][ano]['economico'][0][0] = (reg_dados[r.id][ano]['economico'][0][0] / pop_total)
-                                    reg_dados[r.id][ano]['economico'][5][0] = (reg_dados[r.id][ano]['economico'][5][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][6][0] = (reg_dados[r.id][ano]['economico'][6][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][7][0] = (reg_dados[r.id][ano]['economico'][7][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][8][0] = (reg_dados[r.id][ano]['economico'][8][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][9][0] = (reg_dados[r.id][ano]['economico'][9][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][10][0] = (reg_dados[r.id][ano]['economico'][10][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][11][0] = (reg_dados[r.id][ano]['economico'][11][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][12][0] = (reg_dados[r.id][ano]['economico'][12][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][13][0] = (reg_dados[r.id][ano]['economico'][13][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][14][0] = (reg_dados[r.id][ano]['economico'][14][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
-                                    reg_dados[r.id][ano]['economico'][15][0] = (reg_dados[r.id][ano]['economico'][15][0] / (reg_dados[r.id][ano]['economico'][16][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][5][0] = (reg_dados[r.id][ano]['economico'][5][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][6][0] = (reg_dados[r.id][ano]['economico'][6][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][7][0] = (reg_dados[r.id][ano]['economico'][7][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][8][0] = (reg_dados[r.id][ano]['economico'][8][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][9][0] = (reg_dados[r.id][ano]['economico'][9][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][10][0] = (reg_dados[r.id][ano]['economico'][10][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][11][0] = (reg_dados[r.id][ano]['economico'][11][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][12][0] = (reg_dados[r.id][ano]['economico'][12][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][13][0] = (reg_dados[r.id][ano]['economico'][13][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][14][0] = (reg_dados[r.id][ano]['economico'][14][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
+                                    reg_dados[r.id][ano]['economico'][15][0] = (reg_dados[r.id][ano]['economico'][15][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
 
                                     for aux in reg_dados[r.id][ano]['economico']:
                                         if not aux[0] or np.isnan(aux[0]):
                                             aux[0] = str(np.nan) # json.dumps não estava convertendo np.nan em str (porque não sei)
-                                            # print(type(aux[0]))
-                                        # print(aux)
-
-
-
-
-
+   
                             elif request.GET['dados'] == '3':
 
                                 pop = demografico.objects.filter(cidade=OuterRef('cidade'), ano=2017) # ano do registro demográfico (padronizar depois para ultimo censo)
@@ -987,9 +977,6 @@ def index(request):
 
             elif vis == '3': # municipios
                 response = serialize('geojson', cidades.objects.all())
-                pass
-
-
 
         if 'titulo_click' in request.POST:
             """
@@ -999,8 +986,6 @@ def index(request):
             pk = request.POST['titulo_click']
             tm = titulos_minerarios.objects.filter(pk=pk)
             response = list(cidades.objects.filter(geom__intersects=Subquery(tm.values('geom'))).values_list('nome', flat=True))
-
-
 
         if 'sis_viario' in request.POST:
             """
@@ -1026,12 +1011,6 @@ def index(request):
 
         return HttpResponse(json.dumps(response), content_type='application/json')
 
-def get_cidades(reg, visao):
-
-    if visao != 4:
-        return cidades.objects.filter(geom__contained=reg.geom)
-
-    return reg
 
 def getCidades(ids_regiao, visao):
     # Intancias iniciais dos objetos que vão conter id das cidades da região & id e nome das cidades
@@ -1062,9 +1041,3 @@ def getCidades(ids_regiao, visao):
 
     return re_ci, cid_aux
 
-# class serialize_(serialize):
-#     cidades = serialize.SerializerMethodField()
-#
-#     def get_cidades(self, obj):
-#         return obj.cidades
-#

@@ -102,8 +102,7 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                     # modo acima é o correto para os dados brutos
 
                     if tipo == 3:
-                        results = results.aggregate(avg=Avg(var_db))
-                        results = results['avg']   
+                        results = results.aggregate(avg=Avg(var_db))['avg']
                     elif tipo == 4:
                         results = results_t4(results, var_db, Avg)
                         
@@ -148,11 +147,10 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                     # reg_val[r.id] = results.aggregate(Sum(var_db))[var_db + '__sum'] / pop_ativa
                     # modo acima é o correto para os dados brutos para proporção de populacao ativa #
                     if tipo == 3:
-                        results = results.aggregate(avg=Avg(var_db))
-                        reg_val[r.id] = results['avg']
+                        results = results.aggregate(avg=Avg(var_db))['avg']
                     elif tipo == 4:
                         results = results_t4(results, var_db, Avg)
-                        reg_val[r.id] = results
+                    reg_val[r.id] = results
 
                 elif id_var == ct.d_variaveis_calc['pib_pc']:
                     # ainda definir calculo e se continua #

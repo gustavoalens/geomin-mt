@@ -59,3 +59,13 @@ var vl_cluster = new ol.layer.Vector({
     name: lCluster,
     zIndex: 300,
 })
+
+
+// criando o elemento pra ser adicionado na frente do mapa
+let overlay = new ol.Overlay({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+        duration: 250
+    }
+});

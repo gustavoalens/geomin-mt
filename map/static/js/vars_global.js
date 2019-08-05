@@ -16,3 +16,12 @@ let temporal = null
 
 let visao = 0
 let sis_viario = null
+let select_mapa
+
+let map
+
+// associando o popup do html no js
+let container = document.getElementById('popup');
+let content = document.getElementById('popup-content');
+let closer = document.getElementById('popup-closer');
+

@@ -1,407 +1,3 @@
-////## Funções auxiliares dos botões de controle ##////
-
-function limpa_results(){
-    dados_apr = null
-    resultado_analise = null
-    visao_return = null
-    pesquisado_analise = null
-    titulos = null
-    substratos_regiao = null
-    form_selecionado = null
-    temporal = null
-    $('#pop_graf').hide()
-    vl_titulos.getSource().clear()
-    $('#legenda').hide()
-    $('#btn_graf').removeClass('btn-down')
-    $('#btn_graf').addClass('btn-up')
-    muda_visao(visao)
-
-}
-
-function add_shape_lmapa(vis, clickable){
-    let map_src = vl_mapas.getSource()
-    map_src.clear()
-    map_src.addFeatures(vis);
-
-    // limpando seleção de região
-    if (select_mapa != null){
-        map.removeInteraction(select_mapa);
-    }
-    // reiniciando a função para reconhecer click
-    if (true){
-        refresh_interaction_mapa()
-    }
-
-    overlay.setPosition(undefined);
-    closer.blur();
-}
-
-function organiza_dados_apr(vis) {
-    if (dados_apr.max && dados_apr.min){
-        $("#legenda_tit")[0].innerHTML = dados_apr.var
-        $("#legenda_mx")[0].innerHTML = check_float(dados_apr.max, 3)
-        $("#legenda_mn")[0].innerHTML = check_float(dados_apr.min, 3)
-        $("#legenda_md")[0].innerHTML = check_float(((dados_apr.max + dados_apr.min) / 2), 3)
-        $('#legenda').show() // Adicionando a legenda na tela
-
-        let denom = (dados_apr.max - dados_apr.min)
-        for (var i in vis) {
-            let cod = vis[i].values_['pk']
-            vis[i].values_.data = dados_apr.result[cod]
-            if (vis[i] == 'nan'){
-                vis[i].values_.data_nm = null
-            } else {
-                vis[i].values_.data_nm = (dados_apr.result[cod] - dados_apr.min) / denom
-            }
-        }
-    }
-    return vis
-}
-
-function requisita_visao(opc){
-
-    let clickable = true
-    $('#loader').show()
-    $.ajax({ //REFAZER MODO DE PESQUISA
-        type: 'POST',
-        url: '',
-        // async: false,
-        data: {'visao': opc},
-        success: function(response){
-            visao = opc;
-            let vis
-            switch (opc) {
-                case 0: // caso selecionado Mesorregião
-                    vis_meso = new ol.format.GeoJSON().readFeatures(response)
-                    vis_meso_res = new ol.format.GeoJSON().readFeatures(response)
-                    vis = vis_meso_res
-                    break;
-                case 1: // caso selecionado Microrregião
-                    vis_micro = new ol.format.GeoJSON().readFeatures(response)
-                    vis_micro_res = new ol.format.GeoJSON().readFeatures(response)
-                    vis = vis_micro_res
-                    break;
-                case 2: // caso selecionado Província
-                    vis_meso = new ol.format.GeoJSON().readFeatures(response)
-                    vis_meso_res = new ol.format.GeoJSON().readFeatures(response)
-                    vis = vis_meso_res
-                    break;
-                case 3: // caso selecionado Municípios
-                    vis_muni = new ol.format.GeoJSON().readFeatures(response)
-                    vis_muni_res = new ol.format.GeoJSON().readFeatures(response)
-                    vis = vis_muni_res
-                    break;
-                }
-
-
-            if (dados_apr && visao_return == opc){ // caso haja resultado a ser inserido no shape
-                // adicionando o título da pesquisa e os valores máximo, médio e mínimo na legenda
-                vis = organiza_dados_apr(vis)
-
-                clickable = false
-            }
-
-            // adicionando no layer e liberando o sistema
-            add_shape_lmapa(vis, clickable)
-            $('#loader').hide()
-
-        },
-        // xhrFields: {
-        //     onprogress: function (e){ // Função para computador progresso
-        //         console.log(e)
-        //         // $('#loader').show()
-        //         var data = e.currentTarget.response;
-        //
-        //         if (data.lastIndexOf('|') >= 0) {
-        //             var val2 = data.slice((data.lastIndexOf('|') + 1));
-        //             var val = val2.split("-");
-        //             var numProgressGeral = parseFloat(val[1]);
-        //             var numProgressAtual = parseFloat(val[0]);
-        //             console.log(numProgressGeral)
-        //
-        //             // progressBarGeral.width(numProgressGeral + '%').text(numProgressGeral + '%');
-        //             // progressBarAtual.width(numProgressAtual + '%').text(numProgressAtual + '%');
-        //         }
-        //     }
-        // },
-        error: function (data) {
-            console.log('erro')
-        }
-    })
-
-}
-
-// função que reconhecerá qual foi clicado e alterar a feature que está em tela
-function muda_visao(opc){
-    let map_src = vl_mapas.getSource()
-    map_src.clear() // limpando o vetor do mapa
-    let vis = null // variável auxiliar que salvará as features do shape selecionado
-    let clickable = true
-    visao = opc; // atualizando variavel global de controle de visao
-    $('#nv-vis_mac').removeClass('active')
-    $('#nv-vis_mic').removeClass('active')
-    $('#nv-vis_pro').removeClass('active')
-    $('#nv-vis_mun').removeClass('active')
-
-
-    switch (opc) {
-        case 0: // caso selecionado Mesorregião
-            // vis = vis_meso
-            $('#nv-vis_mac').addClass('active')
-            if (vis_meso_res){
-                vis = vis_meso_res
-            }
-            else if (!vis_meso){
-                requisita_visao(opc)
-            }
-            else {
-                vis = vis_meso
-            }
-            break;
-        case 1: // caso selecionado Microrregião
-            // vis = vis_micro
-            $('#nv-vis_mic').addClass('active')
-            if (vis_micro_res){
-                vis = vis_micro_res
-            }
-            else if (!vis_micro){
-                requisita_visao(opc)
-            }
-            else {
-                vis = vis_micro
-            }
-            break;
-        case 2: // caso selecionado Província
-        $('#nv-vis_pro').addClass('active')
-            if (vis_meso_res){
-                vis = vis_meso_res
-            }
-            else if (!vis_meso){
-                requisita_visao(opc)
-            }
-            else {
-                vis = vis_meso //adicionar shape certo
-            }
-            break;
-        case 3: // caso selecionado Municípios
-            $('#nv-vis_mun').addClass('active')
-            if (vis_muni_res){
-                vis = vis_muni_res
-            }
-            else if (!vis_muni){
-                requisita_visao(opc)
-            }
-            else {
-                vis = vis_muni
-            }
-            break;
-    }
-    // adicionando novo shape ao layer de vetor
-    if (vis){
-        if (dados_apr && visao_return == opc){ // caso haja resultado a ser inserido no shape
-            clickable = false
-        }
-        add_shape_lmapa(vis, clickable)
-
-    }
-}
-
-function requisita_shp_via(sisv) {
-    let data = null
-    switch (sisv) {
-        case 0:
-            if (!rodovias){
-                data = 'rodovias'
-            }
-            else {
-                return rodovias
-            }
-            break;
-        case 1:
-            if (!ferrovias){
-                data = 'ferrovias'
-            }
-            else {
-                return ferrovias
-            }
-            break;
-        case 2:
-            if (!hidrovias){
-                data = 'hidrovias'
-            }
-            else {
-                return hidrovias
-            }
-            break;
-
-        case 3:
-            if (!aerodromos){
-                data = 'aerodromos'
-            }
-            else {
-                return aerodromos
-            }
-            break;
-        default:
-            console.log('ERRO')
-    }
-
-    if (data) {
-        $('#loader').show()
-        $.ajax({
-            type: 'POST',
-            url: '',
-            // async: false,
-            data: {sis_viario: data},
-            success: function(response){
-                if (response) {
-                    addmap_via((new ol.format.GeoJSON()).readFeatures(response), sisv)
-                }
-                else {
-                    // apresentar erro
-                    console.log('errão')
-                }
-                $('#loader').hide()
-            },
-            error: function (data) {
-                console.log('erro')
-            }
-        })
-    }
-
-    return null
-}
-
-
-// função para checar se o vetor de rodovias está ativo ou não no mapa
-function check_sisviario(sisv) {
-
-    $('#nv-via_rodo').removeClass('active')
-    $('#nv-via_ferro').removeClass('active')
-    $('#nv-via_hidro').removeClass('active')
-    $('#nv-via_aero').removeClass('active')
-
-    let sr_sisvias = vl_sisvias.getSource()
-    let legenda_via = $('#legenda_via')
-    if (sr_sisvias.getFeatures().length > 0){
-        $('#btn_' + nomes_sisvs[sis_viario]).removeClass('selected')
-        sr_sisvias.clear()
-        legenda_via.hide()
-    }
-
-    if (sisv == null || sisv == sis_viario) {
-        sis_viario = null
-        legenda_via.hide()
-    }
-    else if (!sis_viario || sisv != sis_viario){
-        let shp_viario = requisita_shp_via(sisv)
-
-        if (shp_viario){
-            addmap_via(shp_viario, sisv)
-        }
-        legenda_via.show()
-    }
-
-}
-
-function addmap_via(shp, sisv) {
-    sis_viario = sisv
-    vl_sisvias.getSource().addFeatures(shp)
-    $('#btn_' + nomes_sisvs[sisv]).addClass('selected')
-
-    let titulo_leg = $('#legenda_via_tit')
-    let div_leg_via = $('#legenda_via_itens')
-
-    div_leg_via.empty()
-
-    function add_linha_legenda(stroke, legenda, is_line) {
-        let rep_item = new XMLHttpRequest()
-        if (is_line) {
-            rep_item.open('GET', 'static/imagens/line2.html', true)
-        }
-        else {
-            rep_item.open('GET', 'static/imagens/point.html', true)
-        }
-        rep_item.onreadystatechange = function(){
-            if (rep_item.status == 200 && rep_item.readyState == 4){
-                let svg = rep_item.responseText
-
-                for (let l in legenda){
-                    let l_nome = legenda[l]
-                    let div_item = document.createElement('div')
-                    div_item.id = `leg_rodovia_${l}`
-                    div_item.className = 'row leg_via-item'
-
-                    let div_line = document.createElement('div')
-                    div_line.className = 'col-md-3'
-                    div_line.innerHTML = svg
-                        .replace(/__prefix__/g, l)
-                        .replace(/__fill__/g, stroke[l_nome])
-
-                    let div_nome = document.createElement('div')
-                    div_nome.className = 'col-md-9 leg_via-txt'
-                    div_nome.innerHTML = l_nome
-
-                    div_item.appendChild(div_line)
-                    div_item.appendChild(div_nome)
-
-                    div_leg_via.append(div_item)
-
-                }
-            }
-        }
-        rep_item.send(null)
-    }
-
-
-    switch (sis_viario) {
-        case 0:
-            $('#nv-via_rodo').addClass('active')
-            titulo_leg.html('Rodovias')
-            add_linha_legenda(stroke_rodovias, legenda_rodovias, true)
-
-            break;
-
-        case 1:
-            $('#nv-via_ferro').addClass('active')
-            titulo_leg.html('Ferrovias')
-            add_linha_legenda(stroke_ferrovias, legenda_ferrovias, true)
-            break;
-
-        case 2:
-            $('#nv-via_hidro').addClass('active')
-            titulo_leg.html('Hidrovias')
-            add_linha_legenda(stroke_hidrovias, legenda_hidrovias, true)
-            break;
-
-        case 3:
-            $('#nv-via_aero').addClass('active')
-            titulo_leg.html('Aerodromos - Situação da pista')
-            add_linha_legenda(stroke_aerodromos, legenda_aerodromos, false)
-            break;
-        default:
-            console.log('ué')
-
-    }
-}
-
-////# Pop-ups #////
-
-//# Pop-ups ligados ao mapa #//
-
-// associando o popup do html no js
-var container = document.getElementById('popup');
-var content = document.getElementById('popup-content');
-var closer = document.getElementById('popup-closer');
-
-// criando o elemento pra ser adicionado na frente do mapa
-var overlay = new ol.Overlay({
-    element: container,
-    autoPan: true,
-    autoPanAnimation: {
-        duration: 250
-    }
-});
 
 // handler para esconder o popup
 closer.onclick = function() {
@@ -425,7 +21,7 @@ muda_visao(visao)
 
 
 ////# MAPA #////
-var map = new ol.Map({
+map = new ol.Map({
     // adicionando os controles básicos e extendendo ao criado
     controls: ol.control.defaults({
         attributionOptions: {collapsible: false}
@@ -449,10 +45,6 @@ var map = new ol.Map({
 
     }),
 });
-
-
-
-
 
 
 let pk_click = null
@@ -716,9 +308,9 @@ map.on('singleclick', function(evt) {
 
 
 //# Interações visuais/pré-resultado com o mapa #//
-var select = null; // objeto da interação Select
-var selected; // objeto que irá conter o vetor com os ids das regiões selecionadas
-var i = 0;
+var select = null // objeto da interação Select
+var selected // objeto que irá conter o vetor com os ids das regiões selecionadas
+var i = 0
 
 // função para adicionar interação de select no mapa
 function select_poly(name){
@@ -747,31 +339,31 @@ function select_poly(name){
     // }
 }
 
-let select_mapa
-function refresh_interaction_mapa(){
-    if (select_mapa != null){
-        map.removeInteraction(select_mapa)
-    }
-    select_mapa = new ol.interaction.Select({
-        layers: function(layer){
-            if (layer.get('name') == lMapa || layer.get('name') == lTitulos) {
-                layer.setZIndex(layer.getZIndex() + 2)
-                return true
-            }
-        },
-        filter: function(feature, layer) { //filtro para layer correta para efeito
-            if (layer.get('name') == lMapa || layer.get('name') == lTitulos) return true
-        },
-        style: style_select,
-    });
-    map.addInteraction(select_mapa);
-    select_mapa.on('select', function(e){
-        selected = e.target.getFeatures().getArray();
-    })
+// let select_mapa
+// function refresh_interaction_mapa(){
+//     if (select_mapa != null){
+//         map.removeInteraction(select_mapa)
+//     }
+//     select_mapa = new ol.interaction.Select({
+//         layers: function(layer){
+//             if (layer.get('name') == lMapa || layer.get('name') == lTitulos) {
+//                 layer.setZIndex(layer.getZIndex() + 2)
+//                 return true
+//             }
+//         },
+//         filter: function(feature, layer) { //filtro para layer correta para efeito
+//             if (layer.get('name') == lMapa || layer.get('name') == lTitulos) return true
+//         },
+//         style: style_select,
+//     });
+//     map.addInteraction(select_mapa);
+//     select_mapa.on('select', function(e){
+//         selected = e.target.getFeatures().getArray();
+//     })
 
-    console.log(map.getInteractions())
+//     console.log(map.getInteractions())
     
-}
+// }
 refresh_interaction_mapa()
 // select_poly(lMapa); // inserindo a interação no mapa pela primeira vez
 

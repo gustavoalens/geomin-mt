@@ -195,7 +195,6 @@ check_tit_num_proc()
 check_pf_pj()
 
 // iniciando campo de numero de processo como vazio
-
 if ($('#id_numero')[0].value == '0') {
     $('#id_numero')[0].value = ''
 }

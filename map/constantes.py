@@ -357,7 +357,7 @@ d_variaveis_pesq = {
 d_variaveis_db = {
     0: '-------', 1: 'valor', 2: ['quantidade', 'unidade'],
     3: 'valorPago', 4: 'populacao_total', 5: 'populacao_urbana', 6: 'populacao_rural',
-    7: 'idhm', 8: 'idhm_renda', 9: 'idhm_longevidade', 10: 'idhm_educação',
+    7: 'idhm', 8: 'idhm_renda', 9: 'idhm_longevidade', 10: 'idhm_educacao',
     11: 'expc_vida', 12: 'prob_60anos', 13: 'expc_anos_estudo18', 14: 'renda_pc',
     15: 'salario_trab_form', 16: 'prop_extr_pobre', 17: 'prop_pobre',
     18: 'prop_vuln_pobre', 19: 'taxa_analfab_15mais', 20: 'ideb_inicias',
