@@ -39,6 +39,7 @@
             "console": "integratedTerminal",
             "args": [
                 "runserver",
+                "localhost:8080",
                 "--noreload",
                 "--nothreading"
             ],

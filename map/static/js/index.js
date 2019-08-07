@@ -47,7 +47,7 @@ map = new ol.Map({
 });
 
 
-let pk_click = null
+
 //# onClick no mapa #//
 map.on('singleclick', function(evt) {
 

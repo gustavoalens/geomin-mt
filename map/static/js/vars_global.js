@@ -25,3 +25,4 @@ let container = document.getElementById('popup');
 let content = document.getElementById('popup-content');
 let closer = document.getElementById('popup-closer');
 
+let pk_click = null

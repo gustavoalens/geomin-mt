@@ -1,6 +1,7 @@
 from map import constantes as ct
 from django.db.models import Sum, Avg, Max, Min, Func, Value,\
-    ExpressionWrapper, F, IntegerField, FloatField, CharField, Subquery, OuterRef
+    ExpressionWrapper, F, Q, IntegerField, FloatField, CharField, Subquery, OuterRef,\
+    Case, When
 from django.contrib.postgres.aggregates import ArrayAgg
 from map.models import cidades, mesorregioes, microrregioes, demografico, economia, \
     socioeconomico, arrecadacao, pessoa_fisica, pessoa_juridica, titulos_minerarios, \
@@ -97,15 +98,33 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                     results = socioeconomico.objects.filter(cidade__in=cid, ano__in=anos)
 
                 if id_var in ct.d_variaveis_calc['proporcao']:
-                    # pop_tot = demografico.objects.filter(cidade__in=cid).aggregate(Sum('populacao_total'))[var_db + '__sum']
-                    # reg_val[r.id] = results.aggregate(Sum(var_db))[var_db + '__sum'] / pop_total
-                    # modo acima é o correto para os dados brutos
-
+                    pop = demografico.objects.filter(cidade=OuterRef('cidade'), ano=OuterRef('ano'))
                     if tipo == 3:
-                        results = results.aggregate(avg=Avg(var_db))['avg']
+                        pop_tot = demografico.objects.filter(cidade__in=cid, ano=anos).aggregate(tot=Sum('populacao_total'))['tot']
+                        results = (results.aggregate(
+                            sm = Sum(
+                                (F(var_db) / 100) * Subquery(
+                                    pop.values(('populacao_total'))[:1]
+                                ), output_field=FloatField()
+                            )
+                        ) ['sm'] / pop_tot) * 100
                     elif tipo == 4:
-                        results = results_t4(results, var_db, Avg)
-                        
+                        pop_total = demografico.objects.filter(cidade__in=cid, ano__in=anos)\
+                            .values('ano')\
+                                .annotate(populacao_total=Sum('populacao_total'))
+
+                        pop_total = pop_total.filter(ano=OuterRef('ano'))
+
+                        results = results.values('ano').order_by('ano')\
+                            .annotate(
+                                total=ExpressionWrapper(
+                                    Sum(
+                                        (F(var_db) / 100) * Subquery(pop.values('populacao_total')[:1]), output_field=FloatField()
+                                    ) / Subquery(pop_total.values('populacao_total')[:1]), output_field=FloatField()
+                                ) * 100)
+
+                        results = list(results.values_list('ano', 'total'))
+
                     reg_val[r.id] = results
 
                 elif id_var in ct.d_variaveis_calc['idhm']:
@@ -143,13 +162,34 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                         reg_val[r.id] = results
 
                 elif id_var in ct.d_variaveis_calc['proporcao']:
-                    # pop_ativa = results.aggregate(Sum('pop_ativa_18mais'))['pop_ativa_18mais__sum']
-                    # reg_val[r.id] = results.aggregate(Sum(var_db))[var_db + '__sum'] / pop_ativa
-                    # modo acima é o correto para os dados brutos para proporção de populacao ativa #
-                    if tipo == 3:
-                        results = results.aggregate(avg=Avg(var_db))['avg']
+
+                    if tipo == 3: # Confirmar resultados
+                        results = results.aggregate(
+                            total=(
+                                Sum(
+                                    F(var_db) * F('pop_ativa_18mais'), 
+                                    output_field=FloatField()
+                                )
+                            ) / Sum('pop_ativa_18mais', output_field=FloatField()) * 100
+                        )['total']
                     elif tipo == 4:
-                        results = results_t4(results, var_db, Avg)
+                        pop_atv_total = economia.objects.filter(cidade__in=cid, ano__in=anos)\
+                            .values('ano')\
+                                .annotate(pop_ativa_18mais=Sum('pop_ativa_18mais'))
+
+                        pop_atv_total = pop_atv_total.filter(ano=OuterRef('ano'))
+                        
+                        results = results.values('ano').order_by('ano')\
+                            .annotate(
+                                total=
+                                     ExpressionWrapper(
+                                        Sum(F(var_db) * F('pop_ativa_18mais'), output_field=FloatField()) 
+                                        / Subquery(pop_atv_total.values('pop_ativa_18mais')[:1]),
+                                        output_field=FloatField()
+                                    ) * 100
+                            )
+                        results = list(results.values_list('ano', 'total'))
+
                     reg_val[r.id] = results
 
                 elif id_var == ct.d_variaveis_calc['pib_pc']:
