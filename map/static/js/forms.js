@@ -610,104 +610,170 @@ let tipos_rep = null
 $('#fAnalisar').submit(function(eventObj) {
     event.preventDefault()
     document.getElementById('visao_an').value = visao.toString();
-    // $(".loader").css("display", "block");
 
-    // let vars = organiza_subs_usos('fvars-var') // checando e listando subs adicionado p pesquisa
+    let ok = true
 
-    let vars = []
-    $('[name=fvars-var]').each(function(){
-        vars.push($(this).val())
-    })
-    vars = '&vars=' + vars.toString() // preparando para inserir no form corrigido
+    if (!$('input[name="tipo_analise"]:checked').val()){
+        $('#error_modal_text').append('Nenhum tipo de análise foi selecionado')
+        $('#error_modal').modal('show')
+        ok = false
+    } else {
+        let data = $('#fAnalisar').serialize()
+        if ($('#id_tipo_analise_2').is(':checked')){
+            if ($("#id_subs_cr").find(':selected').val() == 0){
+                $('#error_modal_text').append('É necessário selecionar um tipo de substrato para cruzar os dados')
+                $('#error_modal').modal('show')
+                ok = false
+            } 
+            else if (!$('input[name="dados"]:checked').val()){
+                $('#error_modal_text').append('É necessário selecionar um tipo de dado para ser cruzado')
+                $('#error_modal').modal('show')
+                ok = false
+            } 
+            else {
+                let obj_ano_i = document.getElementById('id_an_ano_i')
+                let obj_ano_f = document.getElementById('id_an_ano_f')
+                let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
+                let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
+    
+                if (ano_i > ano_f){
+                    $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
+                    $('#error_modal').modal('show')
+                    ok = false
+                }
+            }
+        } 
+        else if ($('#id_tipo_analise_3').is(':checked')){
+            if ($("#id_variavel").find(':selected').val() == 0){
+                $('#error_modal_text').append('É necessário selecionar uma variável a ser apresentada')
+                $('#error_modal').modal('show')
+                ok = false
+            }
+        } 
+        else {
+            var vars = []
+            $('[name=fvars-var]').each(function(){
+                let val = $(this).val()
+                if (val > 0){
+                    vars.push(val)
+                }
+            })
+            console.log(vars)
 
-    let tp = {0: 'line', 1: 'bar'}
-    tipos_rep = []
-    $('[name=fvars-rep]').each(function(){
-        tipos_rep.push($(this).val())
-    })
+            if (!vars.length){
+                $('#error_modal_text').append('É necessário selecionar ao menos uma variável a ser apresentada')
+                $('#error_modal').modal('show')
+                ok = false
+            }
+            else {
+                let obj_ano_i = document.getElementById('id_ano_i_t')
+                let obj_ano_f = document.getElementById('id_ano_f_t')
+                let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
+                let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
+                if (ano_i > ano_f){
+                    $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
+                    $('#error_modal').modal('show')
+                    ok = false
+                }
 
-    let series = {}
-    for (let i in tipos_rep){
-        series[i] = {type: tp[tipos_rep[i]]}
-    }
-    tipos_rep = series
+                else {
+                    vars = '&vars=' + vars.toString() // preparando para inserir no form corrigido
+                    let tp = {0: 'line', 1: 'bar'}
+                    tipos_rep = []
+                    $('[name=fvars-rep]').each(function(){
+                        tipos_rep.push($(this).val())
+                    })
 
-
-    let data = $('#fAnalisar').serialize().replace(/&fvars-vars/g, '') + vars // retirando fsubs e fusos do form e adiciona lista de ambos
-
-    if (true) {
-        $(".loader").css("display", "block");
-        $.ajax({
-            type: 'GET',
-            url: '',
-            data: data,
-            success: function(response) {
-                if (response){
-                    limpa_results()
-                    visao_return = parseInt(response['visao'])
-                    delete response.visao
-
-                    if (response['substratos_regiao']) {
-                        delete response.substratos_regiao
-                        substratos_regiao = response
+                    let series = {}
+                    for (let i in tipos_rep){
+                        series[i] = {type: tp[tipos_rep[i]]}
                     }
+                    tipos_rep = series
 
-                    else if (response['resultado_analise']) {
-                        pesquisado_analise = response.resultado_analise
-                        delete response.resultado_analise
-                        resultado_analise = response
-                    }
+                    console.log(vars)
+                    data = data.replace(/&fvars-vars/g, '') + vars // retirando fsubs e fusos do form e adiciona lista de ambos
+                }                
+            }
+        }
+        
 
-                    else if (response['dados_apr']) {
-                        delete response.dados_apr
-                        dados_apr = response
-                        let vis
-                        switch (visao_return) {
-                            case 0: // caso selecionado Mesorregião
-                                vis = vis_meso_res
-                                break;
-                            case 1: // caso selecionado Microrregião
-                                vis = vis_micro_res
-                                break;
-                            case 2: // caso selecionado Província
-                                vis = vis_meso_res
-                                break;
-                            case 3: // caso selecionado Municípios
-                                vis = vis_muni_res
-                                break;
+        if (ok) {
+            console.log(data)
+            $(".loader").css("display", "block");
+            $.ajax({
+                type: 'GET',
+                url: '',
+                data: data,
+                success: function(response) {
+                    if (response){
+                        limpa_results()
+                        visao_return = parseInt(response['visao'])
+                        delete response.visao
+
+                        if (response['substratos_regiao']) {
+                            delete response.substratos_regiao
+                            substratos_regiao = response
+                        }
+
+                        else if (response['resultado_analise']) {
+                            pesquisado_analise = response.resultado_analise
+                            delete response.resultado_analise
+                            resultado_analise = response
+                        }
+
+                        else if (response['dados_apr']) {
+                            delete response.dados_apr
+                            dados_apr = response
+                            let vis
+                            switch (visao_return) {
+                                case 0: // caso selecionado Mesorregião
+                                    vis = vis_meso_res
+                                    break;
+                                case 1: // caso selecionado Microrregião
+                                    vis = vis_micro_res
+                                    break;
+                                case 2: // caso selecionado Província
+                                    vis = vis_meso_res
+                                    break;
+                                case 3: // caso selecionado Municípios
+                                    vis = vis_muni_res
+                                    break;
+                                }
+                            if (!dados_apr.max){
+                                $('#error_modal_text').append('Nenhum dado foi encontrado')
+                                $('#error_modal').modal('show')
                             }
-                        if (!dados_apr.max){
-                            $('#error_modal_text').append('Nenhum dado foi encontrado')
-                            $('#error_modal').modal('show')
+
+                            vis = organiza_dados_apr(vis)
+                            muda_visao(visao)
                         }
 
-                        vis = organiza_dados_apr(vis)
-                        muda_visao(visao)
-                    }
-
-                    else if (response['temporal']) {
-                        temporal = response['temporal']
-                        if (temporal[4][0].length == 1) {
-                            $('#error_modal_text').append('Nenhum dado foi encontrado')
-                            $('#error_modal').modal('show')
-                        } else {
-                            $('#pop_graf').show()
-                        google.charts.load('current', {packages: ['corechart']});
+                        else if (response['temporal']) {
+                            temporal = response['temporal']
+                            if (temporal[4][0].length == 1) {
+                                $('#error_modal_text').append('Nenhum dado foi encontrado')
+                                $('#error_modal').modal('show')
+                            } else {
+                                $('#pop_graf').show()
+                            google.charts.load('current', {packages: ['corechart']});
+                            }
                         }
+                    } else {
+                        $('#error_modal_text').append('Nenhum dado foi encontrado')
+                        $('#error_modal').modal('show')
                     }
-                } else {
-                    $('#error_modal_text').append('Nenhum dado foi encontrado')
+                    $(".loader").css("display", "none");
+                },
+                error: function(xhr, text, error){
+                    $(".loader").css("display", "none");
+                    $('#error_modal_text').append('Problema no servidor')
                     $('#error_modal').modal('show')
                 }
-                $(".loader").css("display", "none");
-            },
-            error: function(xhr, text, error){
-                $(".loader").css("display", "none");
-                $('#error_modal_text').append('Problema no servidor')
-                $('#error_modal').modal('show')
-            }
-        })
+            })
+        } 
     }
+
+    
 
     // return true;
 });

@@ -112,7 +112,7 @@ def index(request):
                 dfs = list()
                 # Recebendo os parametros passados pelo método GET
                 ids_selecionados = request.GET['ids'] # código das regiões selecionadas
-                anos = list(range(int(request.GET['ano_i']), int(request.GET['ano_f']) + 1))
+                anos = list(range(int(request.GET['dw_ano_i']), int(request.GET['dw_ano_f']) + 1))
                 keys = list(request.GET.keys()) # listagem de todos os parametros passados
 
                 # filtrar as cidade dependendo da visão
@@ -425,7 +425,7 @@ def index(request):
                         else:
                             cid = r
 
-                        anos = [r for r in range(int(request.GET['ano_i']), int(request.GET['ano_f']) + 1)]
+                        anos = [r for r in range(int(request.GET['an_ano_i']), int(request.GET['an_ano_f']) + 1)]
                         for ano in anos:
                             # cfem
                             cfem_ = cfem.objects.filter(cidade__in=cid, ano=ano, subs=subs)\
@@ -811,7 +811,6 @@ def index(request):
                     id_var = int(request.GET['variavel'])
                     ano = None
                     if 'ano_v' in request.GET:
-                        print(f'ano: {request.GET["ano_v"]}, ano_f_t: {request.GET["ano_f_t"]}')
                         ano = request.GET['ano_v']
                     reg_val = None
                     if id_var > 0:

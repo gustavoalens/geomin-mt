@@ -71,8 +71,8 @@ class FormConsulta(forms.Form):
     ar_subs = forms.ChoiceField(label='Substrato', choices=ct.t_subs)
 
     # Campos para filtragem dos anos na busca
-    ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs())
-    ano_f = forms.ChoiceField(label='Ano final', choices=ct.ano_chs())
+    dw_ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs())
+    dw_ano_f = forms.ChoiceField(label='Ano final', choices=ct.ano_chs())
 
 class FormSubs(forms.Form):
     subs = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs[1:], required=False)
@@ -198,8 +198,8 @@ class FormAnalisar(forms.Form):
     # cruzar = forms.BooleanField(label='Cruzar dados por substrato', required=False)
     subs_cr = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs, required=False)
     dados = forms.ChoiceField(label='Cruzar com:', widget=forms.RadioSelect, choices=dados_c, required=False)
-    ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs(), required=False)
-    ano_f = forms.ChoiceField(label='Ano final', choices=ct.ano_chs(), required=False)
+    an_ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs(), required=False)
+    an_ano_f = forms.ChoiceField(label='Ano final', choices=ct.ano_chs(), required=False)
 
     ano_i_t = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs(), required=False)
     ano_f_t = forms.ChoiceField(label='Ano final', choices=ct.ano_chs(), required=False)
