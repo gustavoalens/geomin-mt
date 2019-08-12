@@ -257,11 +257,13 @@ def index(request):
                     # disponibilizar para download - ToDo: colocar em um botão na janela em que serão apresentados os resultados
                     response = HttpResponse(content_type='text/csv')
                     response['Content-Disposition'] = 'attachment; filename=results.csv'
+                    print(df_final)
                     df_final.to_csv(path_or_buf=response, index=False, sep=';', decimal=',')
                     return response
 
                 else: # retornar erro
                     print('Nenhuma busca')
+                    return HttpResponse(json.dumps(None), content_type='application/json')
 
             ## caso form de Títulos for chamado ##
             if form_selecionado == 1:
