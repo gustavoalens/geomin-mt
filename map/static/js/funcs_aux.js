@@ -9,34 +9,34 @@ function jsonCopy(src) {
     return JSON.parse(JSON.stringify(src))
   }
   
-  var percentColors = [
-      { pct: 0.0, color: { r: 0, g: 255, b: 0 } },
-      { pct: 0.5, color: { r: 255, g: 255, b: 0 } },
-      { pct: 1.0, color: { r: 255, g: 0, b: 0 } } ];
-  
-  var getColorForPercentage = function(pct) {
-      if (! isNaN(pct)){
-          for (var i = 1; i < percentColors.length - 1; i++) {
-              if (pct < percentColors[i].pct) {
-                  break;
-              }
-          }
-          var lower = percentColors[i - 1];
-          var upper = percentColors[i];
-          var range = upper.pct - lower.pct;
-          var rangePct = (pct - lower.pct) / range;
-          var pctLower = 1 - rangePct;
-          var pctUpper = rangePct;
-          var color = {
-              r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
-              g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
-              b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
-          };
-          return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
-      }
-      return fill_mapa_color
-      // or output as hex if preferred
-  }
+let percentColors = [
+    { pct: 0.0, color: { r: 0, g: 255, b: 0 } },
+    { pct: 0.5, color: { r: 255, g: 255, b: 0 } },
+    { pct: 1.0, color: { r: 255, g: 0, b: 0 } } ];
+
+let getColorForPercentage = function(pct) {
+    if (! isNaN(pct)){
+        for (var i = 1; i < percentColors.length - 1; i++) {
+            if (pct < percentColors[i].pct) {
+                break;
+            }
+        }
+        let lower = percentColors[i - 1];
+        let upper = percentColors[i];
+        let range = upper.pct - lower.pct;
+        let rangePct = (pct - lower.pct) / range;
+        let pctLower = 1 - rangePct;
+        let pctUpper = rangePct;
+        let color = {
+            r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+            g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+            b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+        };
+        return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
+    }
+    return fill_mapa_color
+    // or output as hex if preferred
+}
 
 
 // limpa dados associados no mapa
@@ -251,6 +251,24 @@ function muda_visao(opc){
     }
 }
 
+// função para adicionar títulos ao layer
+function add_titulos(titulos){
+    if (titulos == -1){
+        //ToDO: Enviar erro a tela de não encontrado
+        alert('Nenhum título encontrado')
+    }
+    else {
+
+        // map.removeInteraction(select);
+        let src_titulos = vl_titulos.getSource()
+        src_titulos.clear()
+        src_titulos.addFeatures((new ol.format.GeoJSON()).readFeatures(titulos))
+        // criando um layer para adicionar o shape do titulos retornados
+
+        // map.addLayer(vl_titulos)
+        // refresh_interaction_mapa()
+    }
+}
 
 // função para checar qual sistema viário está ativo no mapa e requisitar se necessário ou desativar
 function check_sisviario(sisv) {
@@ -438,6 +456,7 @@ function requisita_shp_via(sisv) {
 function refresh_interaction_mapa(){
     if (select_mapa != null){
         map.removeInteraction(select_mapa)
+        selected = []
     }
     select_mapa = new ol.interaction.Select({
         layers: function(layer){
@@ -455,7 +474,5 @@ function refresh_interaction_mapa(){
     select_mapa.on('select', function(e){
         selected = e.target.getFeatures().getArray();
     })
-
-    console.log(map.getInteractions())
     
 }

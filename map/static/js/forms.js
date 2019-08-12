@@ -488,6 +488,7 @@ $('#fTitulo').submit(function(eventObj) {
 
     $(".loader").css("display", "block");
     // nesse caso tem problema o name
+    console.log('Requisitou titulo')
     $.ajax({
         type: 'GET',
         url: '',
@@ -497,6 +498,7 @@ $('#fTitulo').submit(function(eventObj) {
             titulos = response
             add_titulos(titulos)
             $(".loader").css("display", "none");
+            console.log('resultou titulo')
         },
 
         error: function(error){

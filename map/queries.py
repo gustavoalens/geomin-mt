@@ -162,7 +162,7 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                         reg_val[r.id] = results
 
                 elif id_var in ct.d_variaveis_calc['proporcao']:
-
+                    
                     if tipo == 3: # Confirmar resultados
                         results = results.aggregate(
                             total=(
@@ -195,12 +195,41 @@ def get_val_var(tipo, reg, id_var, anos, visao, extras=None):
                 elif id_var == ct.d_variaveis_calc['pib_pc']:
                     # ainda definir calculo e se continua #
                     # calculo 1: retornar a receitas da regiao total e calcular pela quantidade demografica
+                    # if tipo == 3:
+                    #     results = results.aggregate(avg=Avg(var_db))
+                    #     reg_val[r.id] = results['avg']
+                    # elif tipo == 4:
+                    #     results = results_t4(results, var_db, Avg)
+                    #     reg_val[r.id] = results
+
+                    pop = demografico.objects.filter(cidade=OuterRef('cidade'), ano=OuterRef('ano'))
                     if tipo == 3:
-                        results = results.aggregate(avg=Avg(var_db))
-                        reg_val[r.id] = results['avg']
+                        pop_tot = demografico.objects.filter(cidade__in=cid, ano=anos).aggregate(tot=Sum('populacao_total'))['tot']
+                        results = (results.aggregate(
+                            sm = Sum(
+                                F(var_db) * Subquery(
+                                    pop.values(('populacao_total'))[:1]
+                                ), output_field=FloatField()
+                            )
+                        ) ['sm'] / pop_tot)
                     elif tipo == 4:
-                        results = results_t4(results, var_db, Avg)
-                        reg_val[r.id] = results
+                        pop_total = demografico.objects.filter(cidade__in=cid, ano__in=anos)\
+                            .values('ano')\
+                                .annotate(populacao_total=Sum('populacao_total'))
+
+                        pop_total = pop_total.filter(ano=OuterRef('ano'))
+
+                        results = results.values('ano').order_by('ano')\
+                            .annotate(
+                                total=ExpressionWrapper(
+                                    Sum(
+                                        F(var_db) * Subquery(pop.values('populacao_total')[:1]), output_field=FloatField()
+                                    ) / Subquery(pop_total.values('populacao_total')[:1]), output_field=FloatField()
+                                ))
+
+                        results = list(results.values_list('ano', 'total'))
+
+                    reg_val[r.id] = results
 
 
 
