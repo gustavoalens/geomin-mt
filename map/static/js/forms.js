@@ -494,17 +494,22 @@ $('#fTitulo').submit(function(eventObj) {
         url: '',
         data: data,
         success: function(response){
-            limpa_results()
-            titulos = response
-            add_titulos(titulos)
+            if (response){
+                limpa_results()
+                titulos = response
+                add_titulos(titulos)
+            } else {
+                $('#error_modal_text').append('Nenhum título foi encontrado')
+                $('#error_modal').modal('show')
+            }
             $(".loader").css("display", "none");
-            console.log('resultou titulo')
+            
         },
 
         error: function(error){
             $(".loader").css("display", "none");
-            console.log('veio pra ca')
-            console.log(error)
+            $('#error_modal_text').append('Problema no servidor')
+            $('#error_modal').modal('show')
         },
     })
 });
@@ -555,38 +560,45 @@ $('#fDownload').submit(function(eventObj) {
         content_type: 'text/csv',
         success: function(response, status, xhr) {
 
-
-            let filename
-            let disposition = xhr.getResponseHeader('Content-Disposition')
-            if (disposition && disposition.indexOf('attachment') !== -1) {
-                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                var matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) {
-                    filename = matches[1].replace(/['"]/g, '');
+            if (response){
+                let filename
+                let disposition = xhr.getResponseHeader('Content-Disposition')
+                if (disposition && disposition.indexOf('attachment') !== -1) {
+                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    var matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
                 }
+
+                let type = xhr.getResponseHeader('Content-Type')
+                let blob = new File([response], filename, {type: type})
+                let URL = window.URL || window.webkitURL
+                let dUrl = URL.createObjectURL(blob)
+
+
+
+                let a = document.createElement('a')
+                a.id = 'download_csv'
+                a.download = filename
+                a.href = dUrl
+                document.body.appendChild(a)
+                a.click()
+                URL.revokeObjectURL(dUrl)
+                $('#download_csv').remove()
             }
 
-            let type = xhr.getResponseHeader('Content-Type')
-            let blob = new File([response], filename, {type: type})
-            let URL = window.URL || window.webkitURL
-            let dUrl = URL.createObjectURL(blob)
-
-
-
-            let a = document.createElement('a')
-            a.id = 'download_csv'
-            a.download = filename
-            a.href = dUrl
-            document.body.appendChild(a)
-            a.click()
-            URL.revokeObjectURL(dUrl)
-            $('#download_csv').remove()
-
+            else {
+                $('#error_modal_text').append('Nenhum arquivo de download foi gerado')
+                $('#error_modal').modal('show')
+            }
             $(".loader").css("display", "none");
+            
         },
         error: function(xhr, text, error) {
-            console.log(error)
-            console.log(xhr)
+            $(".loader").css("display", "none");
+            $('#error_modal_text').append('Problema no servidor')
+            $('#error_modal').modal('show')
         }
     })
 });
@@ -630,61 +642,69 @@ $('#fAnalisar').submit(function(eventObj) {
             url: '',
             data: data,
             success: function(response) {
-                limpa_results()
-                visao_return = parseInt(response['visao'])
-                delete response.visao
+                if (response){
+                    limpa_results()
+                    visao_return = parseInt(response['visao'])
+                    delete response.visao
 
-                if (response['substratos_regiao']) {
-                    delete response.substratos_regiao
-                    substratos_regiao = response
-                }
+                    if (response['substratos_regiao']) {
+                        delete response.substratos_regiao
+                        substratos_regiao = response
+                    }
 
-                else if (response['resultado_analise']) {
-                    pesquisado_analise = response.resultado_analise
-                    delete response.resultado_analise
-                    resultado_analise = response
+                    else if (response['resultado_analise']) {
+                        pesquisado_analise = response.resultado_analise
+                        delete response.resultado_analise
+                        resultado_analise = response
+                    }
 
-                }
-
-                else if (response['dados_apr']) {
-                    delete response.dados_apr
-                    dados_apr = response
-                    let vis
-                    switch (visao_return) {
-                        case 0: // caso selecionado Mesorregião
-                            vis = vis_meso_res
-                            break;
-                        case 1: // caso selecionado Microrregião
-                            vis = vis_micro_res
-                            break;
-                        case 2: // caso selecionado Província
-                            vis = vis_meso_res
-                            break;
-                        case 3: // caso selecionado Municípios
-                            vis = vis_muni_res
-                            break;
+                    else if (response['dados_apr']) {
+                        delete response.dados_apr
+                        dados_apr = response
+                        let vis
+                        switch (visao_return) {
+                            case 0: // caso selecionado Mesorregião
+                                vis = vis_meso_res
+                                break;
+                            case 1: // caso selecionado Microrregião
+                                vis = vis_micro_res
+                                break;
+                            case 2: // caso selecionado Província
+                                vis = vis_meso_res
+                                break;
+                            case 3: // caso selecionado Municípios
+                                vis = vis_muni_res
+                                break;
+                            }
+                        if (!dados_apr.max){
+                            $('#error_modal_text').append('Nenhum dado foi encontrado')
+                            $('#error_modal').modal('show')
                         }
 
+                        vis = organiza_dados_apr(vis)
+                        muda_visao(visao)
+                    }
 
-                    vis = organiza_dados_apr(vis)
-                    muda_visao(visao)
+                    else if (response['temporal']) {
+                        temporal = response['temporal']
+                        if (temporal[4][0].length == 1) {
+                            $('#error_modal_text').append('Nenhum dado foi encontrado')
+                            $('#error_modal').modal('show')
+                        } else {
+                            $('#pop_graf').show()
+                        google.charts.load('current', {packages: ['corechart']});
+                        }
+                    }
+                } else {
+                    $('#error_modal_text').append('Nenhum dado foi encontrado')
+                    $('#error_modal').modal('show')
                 }
-
-                else if (response['temporal']) {
-                    temporal = response['temporal']
-                    $('#pop_graf').show()
-                    google.charts.load('current', {packages: ['corechart']});
-
-
-                }
-
-
                 $(".loader").css("display", "none");
             },
             error: function(xhr, text, error){
-                console.log(xhr)
-                console.log('Erro: ' + error)
                 $(".loader").css("display", "none");
+                $('#error_modal_text').append('Problema no servidor')
+                $('#error_modal').modal('show')
             }
         })
     }

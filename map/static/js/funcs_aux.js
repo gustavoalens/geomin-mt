@@ -116,7 +116,8 @@ function requisita_visao(opc){
         success: function(response){
             visao = opc;
             let vis
-            switch (opc) {
+            if (response){
+                switch (opc) {
                 case 0: // caso selecionado Mesorregião
                     vis_meso = new ol.format.GeoJSON().readFeatures(response)
                     vis_meso_res = new ol.format.GeoJSON().readFeatures(response)
@@ -137,7 +138,16 @@ function requisita_visao(opc){
                     vis_muni_res = new ol.format.GeoJSON().readFeatures(response)
                     vis = vis_muni_res
                     break;
+                default:
+                    $('#error_modal_text').append('Problema desconhecido')
+                    $('#error_modal').modal('show')
+                    break
                 }
+            } else {
+                $('#error_modal_text').append('Não recebeu os dados do servidor')
+                $('#error_modal').modal('show')
+            }
+            
 
 
             if (dados_apr && visao_return == opc){ // caso haja resultado a ser inserido no shape
@@ -171,7 +181,8 @@ function requisita_visao(opc){
         //     }
         // },
         error: function (data) {
-            console.log('erro')
+            $('#error_modal_text').append('Subdivisão do estado requisitado não é reconhecida pelo sistema')
+            $('#error_modal').modal('show')
         }
     })
 
@@ -254,8 +265,8 @@ function muda_visao(opc){
 // função para adicionar títulos ao layer
 function add_titulos(titulos){
     if (titulos == -1){
-        //ToDO: Enviar erro a tela de não encontrado
-        alert('Nenhum título encontrado')
+        $('#error_modal_text').append('Nenhum título foi encontrado')
+        $('#error_modal').modal('show')
     }
     else {
 
@@ -379,7 +390,8 @@ function addmap_via(shp, sisv) {
             add_linha_legenda(stroke_aerodromos, legenda_aerodromos, false)
             break;
         default:
-            console.log('ué')
+            $('#error_modal_text').append('Sistema viário selecionado é desconhecido pelo sistema')
+            $('#error_modal').modal('show')
 
     }
 }
@@ -423,7 +435,8 @@ function requisita_shp_via(sisv) {
             }
             break;
         default:
-            console.log('ERRO')
+            $('#error_modal_text').append('Sistema viário selecionado é desconhecido pelo sistema')
+            $('#error_modal').modal('show')
     }
 
     if (data) {
@@ -438,13 +451,14 @@ function requisita_shp_via(sisv) {
                     addmap_via((new ol.format.GeoJSON()).readFeatures(response), sisv)
                 }
                 else {
-                    // apresentar erro
-                    console.log('errão')
+                    $('#error_modal_text').append('Dados não foram encontrados')
+                    $('#error_modal').modal('show')
                 }
                 $('#loader').hide()
             },
             error: function (data) {
-                console.log('erro')
+                $('#error_modal_text').append('Problema no servidor')
+                $('#error_modal').modal('show')
             }
         })
     }
@@ -476,3 +490,7 @@ function refresh_interaction_mapa(){
     })
     
 }
+
+$('#error_modal').on('hidden.bs.modal', function(){
+    $('#error_modal_text').empty()
+})
