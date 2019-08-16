@@ -51,7 +51,6 @@ $('#btn_analisar').click(function(){
 function check_ar(){
     if ($('#id_ar').is(':checked')){
         $('#arrecadacao').show();
-        check_ar_taxa();
     } else {
         $('#arrecadacao').hide();
     }
@@ -260,53 +259,6 @@ $('#id_tipo_analise_4').click(function() {
     check_tipo_analise()
 });
 
-// $('#id_variavel').addEventListener('change', function(){
-//     console.log($('#id_variavel').value)
-// })
-
-// function check_variavel(opc){
-//     console.log(opc)
-//     switch ($('#id_variavel').val()) {
-//         case '0':
-//             $('#analisar_apr_opcs_arr').hide()
-//             $('#analisar_apr_subs').hide()
-//             $('#analisar_apr_ano').hide()
-//             break;
-//
-//         case '1':
-//             $('#analisar_apr_opcs_arr').show()
-//             $('#analisar_apr_ano').show()
-//             if ($('#id_opc_arr_2').is(':checked')){
-//                 $('#analisar_apr_subs').show()
-//             } else {
-//                 $('#analisar_apr_subs').hide()
-//             }
-//             break;
-//
-//         case '2':
-//             $('#analisar_apr_opcs_arr').hide()
-//             $('#analisar_apr_subs').show()
-//             $('#analisar_apr_ano').show()
-//             break;
-//
-//         case '3':
-//             $('#analisar_apr_opcs_arr').show()
-//             $('#analisar_apr_ano').hide()
-//             if ($('#id_opc_arr_2').is(':checked')){
-//                 $('#analisar_apr_subs').show()
-//             } else {
-//                 $('#analisar_apr_subs').hide()
-//             }
-//             break;
-//
-//         default:
-//             $('#analisar_apr_opcs_arr').hide()
-//             $('#analisar_apr_subs').hide()
-//             $('#analisar_apr_ano').show()
-//             break;
-//     }
-// }
-
 
 function check_variavel(opc='apr', idx=''){
     let id = 'id_variavel'
@@ -464,54 +416,91 @@ $('#fTitulo').submit(function(eventObj) {
 
     event.preventDefault()
 
-    var ids = []; // lista dos ids das regiões selecionadas
+    let ok = true
 
-    // verifica se alguma região foi selecionada
-    if (typeof selected !== 'undefined' && selected.length) {
-
-        // percorre o vetor de regiões selecionadas
-        for (var s in selected) {
-            ids.push(selected[s].values_.pk)
+    if ($('#id_pesq_num_ano').is(':checked')){
+        if (!$('#id_numero').val()){
+            $('#error_modal_text').append('É necessário inserir o número do Título Minerário')
+            $('#error_modal').modal('show')
+            ok = false
         }
     }
 
-    document.getElementById('ids_tit').value = ids.toString();
-    document.getElementById('visao_tit').value = visao.toString();
-
-
-    let subs = organiza_subs_usos('fsubs-sub') // checando e listando subs adicionado p pesquisa
-    let usos = organiza_subs_usos('fusos-uso') // checando e listando usos adicionado p pesquisa
-    subs = '&subs=' + subs.toString() // preparando para inserir no form corrigido
-    usos = '&usos=' + usos.toString() // preparando para inserir no form corrigido
-
-    let data = $('#fTitulo').serialize().replace(/&fsubs-sub/g, '') + subs + usos // retirando fsubs e fusos do form e adiciona lista de ambos
-
-    $(".loader").css("display", "block");
-    // nesse caso tem problema o name
-    console.log('Requisitou titulo')
-    $.ajax({
-        type: 'GET',
-        url: '',
-        data: data,
-        success: function(response){
-            if (response){
-                limpa_results()
-                titulos = response
-                add_titulos(titulos)
-            } else {
-                $('#error_modal_text').append('Nenhum título foi encontrado')
-                $('#error_modal').modal('show')
-            }
-            $(".loader").css("display", "none");
-            
-        },
-
-        error: function(error){
-            $(".loader").css("display", "none");
-            $('#error_modal_text').append('Problema no servidor')
+    else if ($('#id_pesq_pf_pj').is(':checked')){
+        if (!$('input[name="pes"]:checked').val()){
+            $('#error_modal_text').append('É necessário selecionar qual tipo de pessoa irá filtrar')
             $('#error_modal').modal('show')
-        },
-    })
+            ok = false
+        }
+        else {
+            if ($('#id_pes_1').is(':checked')){
+                if ($('#id_pessoa_fisica').find(':selected').val() == 0){
+                    $('#error_modal_text').append('É necessário selecionar uma pessoa física')
+                    $('#error_modal').modal('show')
+                    ok = false
+                }
+            }
+
+            else if ($('#id_pes_2').is(':checked')){
+                if ($('#id_pessoa_juridica').find(':selected').val() == 0){
+                    $('#error_modal_text').append('É necessário selecionar uma pessoa jurídica')
+                    $('#error_modal').modal('show')
+                    ok = false
+                }
+            }
+        }
+    }
+
+    if (ok) {
+        var ids = []; // lista dos ids das regiões selecionadas
+
+        // verifica se alguma região foi selecionada
+        if (typeof selected !== 'undefined' && selected.length) {
+
+            // percorre o vetor de regiões selecionadas
+            for (var s in selected) {
+                ids.push(selected[s].values_.pk)
+            }
+        }
+
+        document.getElementById('ids_tit').value = ids.toString();
+        document.getElementById('visao_tit').value = visao.toString();
+
+
+        let subs = organiza_subs_usos('fsubs-sub') // checando e listando subs adicionado p pesquisa
+        let usos = organiza_subs_usos('fusos-uso') // checando e listando usos adicionado p pesquisa
+        subs = '&subs=' + subs.toString() // preparando para inserir no form corrigido
+        usos = '&usos=' + usos.toString() // preparando para inserir no form corrigido
+
+        let data = $('#fTitulo').serialize().replace(/&fsubs-sub/g, '') + subs + usos // retirando fsubs e fusos do form e adiciona lista de ambos
+
+        $(".loader").css("display", "block");
+        // nesse caso tem problema o name
+        console.log('Requisitou titulo')
+        $.ajax({
+            type: 'GET',
+            url: '',
+            data: data,
+            success: function(response){
+                if (response){
+                    limpa_results()
+                    titulos = response
+                    add_titulos(titulos)
+                } else {
+                    $('#error_modal_text').append('Nenhum título foi encontrado')
+                    $('#error_modal').modal('show')
+                }
+                $(".loader").css("display", "none");
+                
+            },
+
+            error: function(error){
+                $(".loader").css("display", "none");
+                $('#error_modal_text').append('Problema no servidor')
+                $('#error_modal').modal('show')
+            },
+        })    
+    }
 });
 
 
@@ -521,87 +510,102 @@ $('#fTitulo').submit(function(eventObj) {
 $('#fDownload').submit(function(eventObj) {
     var ids = []; // lista dos ids das regiões selecionadas
     event.preventDefault()
-    // verifica se alguma região foi selecionada
-    if (typeof selected !== 'undefined' && selected.length) {
+    let ok = true
 
-        // percorre o vetor de regiões selecionadas
-        for (var s in selected) {
-
-            // 0-Mesorregiões; 1-Microrregiões; 2-Províncias; 3-Munícipios
-            switch (visao) {
-                case 0:
-                    ids.push(selected[s].values_.cd_geocme);
-                    break;
-                case 1:
-                    ids.push(selected[s].values_.cd_geocmi);
-                    break;
-                case 2:
-                    ids.push(selected[s].values_.cd_geoprv);
-                    break;
-                case 3:
-                    ids.push(selected[s].values_.cd_geocmu);
-                    break;
-                default:
-                    ids.push(-1);
-
-            }
-        }
+    let obj_ano_i = document.getElementById('id_dw_ano_i')
+    let obj_ano_f = document.getElementById('id_dw_ano_f')
+    let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
+    let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
+    if (ano_i > ano_f){
+        $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
+        $('#error_modal').modal('show')
+        ok = false
     }
 
-    // adicionando os valores nos campos hidden para o método GET
-    document.getElementById('ids').value = ids.toString();
-    document.getElementById('visao').value = visao.toString();
-    $(".loader").css("display", "block");
+    if (ok){
+       // verifica se alguma região foi selecionada
+        if (typeof selected !== 'undefined' && selected.length) {
 
-    $.ajax({
-        type: 'GET',
-        url: '',
-        data: $('#fDownload').serialize(),
-        content_type: 'text/csv',
-        success: function(response, status, xhr) {
+            // percorre o vetor de regiões selecionadas
+            for (var s in selected) {
 
-            if (response){
-                let filename
-                let disposition = xhr.getResponseHeader('Content-Disposition')
-                if (disposition && disposition.indexOf('attachment') !== -1) {
-                    var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                    var matches = filenameRegex.exec(disposition);
-                    if (matches != null && matches[1]) {
-                        filename = matches[1].replace(/['"]/g, '');
+                // 0-Mesorregiões; 1-Microrregiões; 2-Províncias; 3-Munícipios
+                switch (visao) {
+                    case 0:
+                        ids.push(selected[s].values_.cd_geocme);
+                        break;
+                    case 1:
+                        ids.push(selected[s].values_.cd_geocmi);
+                        break;
+                    case 2:
+                        ids.push(selected[s].values_.cd_geoprv);
+                        break;
+                    case 3:
+                        ids.push(selected[s].values_.cd_geocmu);
+                        break;
+                    default:
+                        ids.push(-1);
+
+                }
+            }
+        }
+
+        // adicionando os valores nos campos hidden para o método GET
+        document.getElementById('ids').value = ids.toString();
+        document.getElementById('visao').value = visao.toString();
+        $(".loader").css("display", "block");
+
+        $.ajax({
+            type: 'GET',
+            url: '',
+            data: $('#fDownload').serialize(),
+            content_type: 'text/csv',
+            success: function(response, status, xhr) {
+
+                if (response){
+                    let filename
+                    let disposition = xhr.getResponseHeader('Content-Disposition')
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        var matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            filename = matches[1].replace(/['"]/g, '');
+                        }
                     }
+
+                    let type = xhr.getResponseHeader('Content-Type')
+                    let blob = new File([response], filename, {type: type})
+                    let URL = window.URL || window.webkitURL
+                    let dUrl = URL.createObjectURL(blob)
+
+
+
+                    let a = document.createElement('a')
+                    a.id = 'download_csv'
+                    a.download = filename
+                    a.href = dUrl
+                    document.body.appendChild(a)
+                    a.click()
+                    URL.revokeObjectURL(dUrl)
+                    $('#download_csv').remove()
                 }
 
-                let type = xhr.getResponseHeader('Content-Type')
-                let blob = new File([response], filename, {type: type})
-                let URL = window.URL || window.webkitURL
-                let dUrl = URL.createObjectURL(blob)
-
-
-
-                let a = document.createElement('a')
-                a.id = 'download_csv'
-                a.download = filename
-                a.href = dUrl
-                document.body.appendChild(a)
-                a.click()
-                URL.revokeObjectURL(dUrl)
-                $('#download_csv').remove()
-            }
-
-            else {
-                $('#error_modal_text').append('Nenhum arquivo de download foi gerado')
+                else {
+                    $('#error_modal_text').append('Nenhum arquivo de download foi gerado')
+                    $('#error_modal').modal('show')
+                }
+                $(".loader").css("display", "none");
+                
+            },
+            error: function(xhr, text, error) {
+                $(".loader").css("display", "none");
+                $('#error_modal_text').append('Problema no servidor')
                 $('#error_modal').modal('show')
             }
-            $(".loader").css("display", "none");
-            
-        },
-        error: function(xhr, text, error) {
-            $(".loader").css("display", "none");
-            $('#error_modal_text').append('Problema no servidor')
-            $('#error_modal').modal('show')
-        }
-    })
-});
+        }) 
+    }
+    
+})
 
 
 let tipos_rep = null
@@ -650,7 +654,7 @@ $('#fAnalisar').submit(function(eventObj) {
                 ok = false
             }
         } 
-        else {
+        else if ($('#id_tipo_analise_4').is(':checked')){
             var vars = []
             $('[name=fvars-var]').each(function(){
                 let val = $(this).val()

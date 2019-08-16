@@ -1,4 +1,3 @@
-
 // handler para esconder o popup
 closer.onclick = function() {
     overlay.setPosition(undefined);
