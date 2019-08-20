@@ -70,7 +70,7 @@ function add_shape_lmapa(vis, clickable){
         map.removeInteraction(select_mapa);
     }
     // reiniciando a função para reconhecer click
-    if (true){
+    if (clickable){
         refresh_interaction_mapa()
     }
 
