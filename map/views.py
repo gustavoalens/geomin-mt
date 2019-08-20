@@ -84,7 +84,6 @@ def index(request):
     form_dados = None
     form_titulos = None
     form_analise = None
-    form_subs = None
     reg_dados = None
     visao = None
     reg_subs = None
@@ -97,7 +96,6 @@ def index(request):
         form_dados = FormConsulta(request.GET or None)
         form_titulos = FormTitulo(request.GET or None)
         form_analise = FormAnalisar(request.GET or None)
-        form_subs = FormsetSubs(request.GET or None)
 
         if 'check' in request.GET.keys():
             form_selecionado = int(request.GET['check'])
@@ -194,7 +192,7 @@ def index(request):
                     if re_ci:
                         ar = ar.filter(cidade__id__in=re_ci)
                     subs = int(request.GET['ar_subs'])
-                    if subs != 0:
+                    if subs != 0:  # se existe filtro pro tipo substrato
                         ar = ar.filter(subs=subs)
 
                     if ar:
@@ -368,7 +366,7 @@ def index(request):
                     reg_subs['visao'] = visao
                     return HttpResponse(json.dumps(reg_subs), content_type='application/json')
 
-                # caso vai cruzar substrato com algum dado
+                # caso cruzamento de info dos substrato com algum dado
                 elif request.GET['tipo_analise'] == '2':
                     """
                     Requisição do menu Análise - Opção: Cruzar dados por substrato
@@ -412,8 +410,6 @@ def index(request):
                                     reg_dados[r.id][ano] = {'cfem': dict()}
                                 reg_dados[r.id][ano]['cfem'][ct.d_un_ab[c['unidade']]] = [c['quantidade'], c['valor']]
 
-
-
                             # checar qual "classe" de dado foi escolhida (1- Demográfico, 2- Econômico, 3- Socioeconômico)
                             if request.GET['dados'] == '1':
                                 dm = demografico.objects.filter(cidade__in=cid, ano=ano)
@@ -430,8 +426,6 @@ def index(request):
                                     reg_dados[r.id][ano]['demografico'] = [pop_ur, pop_ru, pop_tot]
 
                             elif request.GET['dados'] == '2':
-
-
                                 pop = demografico.objects.filter(cidade=OuterRef('cidade'))
                                 ec = economia.objects.filter(cidade__in=cid, ano=ano)\
                                     .values('id', 'receitas', 'receitas_fontext', 'despesas', 'pop_ativa_18mais')\
@@ -547,17 +541,6 @@ def index(request):
                                         else:
                                             reg_dados[r.id][ano]['economico'][15][1] = False
 
-                                        # if e['pop_ocupada'] is not None and not np.isnan(e['pop_ocupada']):
-                                        #     reg_dados[r.id][ano]['economico'][16][0] += e['pop_ocupada']
-                                        # else:
-                                        #     reg_dados[r.id][ano]['economico'][16][1] = False
-
-                                        # if e['pop_ocupada_bruto'] is not None and not np.isnan(e['pop_ocupada_bruto']):
-                                        #     reg_dados[r.id][ano]['economico'][16][0] += e['pop_ocupada_bruto']
-                                        # else:
-                                        #     reg_dados[r.id][ano]['economico'][16][1] = False
-
-
                                     reg_dados[r.id][ano]['economico'][0][0] = (reg_dados[r.id][ano]['economico'][0][0] / pop_total)
                                     reg_dados[r.id][ano]['economico'][5][0] = (reg_dados[r.id][ano]['economico'][5][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
                                     reg_dados[r.id][ano]['economico'][6][0] = (reg_dados[r.id][ano]['economico'][6][0] / (reg_dados[r.id][ano]['economico'][4][0] or np.nan)) * 100
@@ -577,14 +560,13 @@ def index(request):
    
                             elif request.GET['dados'] == '3':
 
-                                pop = demografico.objects.filter(cidade=OuterRef('cidade'), ano=2017) # ano do registro demográfico (padronizar depois para ultimo censo)
+                                pop = demografico.objects.filter(cidade=OuterRef('cidade'), ano=ano) # ano do registro demográfico (padronizar depois para ultimo censo)
                                 sc = socioeconomico.objects.filter(cidade__in=cid, ano=ano)\
                                     .values('idhm', 'idhm_renda', 'idhm_longevidade', 'idhm_educacao',
                                         'expc_vida', 'prob_60anos', 'expc_anos_estudo18', 'salario_trab_form',
                                         'ideb_inicias', 'ideb_finais')\
                                     .annotate(
                                         pop_total=Subquery(pop.values('populacao_total')[:1]),
-                                        pop_ocupada=ExpressionWrapper((F('pop_ocupada') / 100) * F('pop_total'), output_field=FloatField()),
                                         renda_pc=ExpressionWrapper((F('renda_pc') / 100) * F('pop_total'), output_field=FloatField()),
                                         prop_extr_pobre=ExpressionWrapper((F('prop_extr_pobre') / 100) * F('pop_total'), output_field=FloatField()),
                                         prop_pobre=ExpressionWrapper((F('prop_pobre') / 100) * F('pop_total'), output_field=FloatField()),
@@ -605,7 +587,7 @@ def index(request):
 
                                     if 'socioeconomico' not in reg_dados[r.id][ano].keys():
                                         reg_dados[r.id][ano]['socioeconomico'] = [
-                                            [0.0, True], [0.0, 0, True], [0.0, 0, True], [0.0, 0, True], [0.0, 0, True], # 0, 1, 2, 3, 4
+                                            [0.0, 0, True], [0.0, 0, True], [0.0, 0, True], [0.0, 0, True], # 0, 1, 2, 3, 4
                                             [0.0, 0, True], [0.0, 0, True], [0.0, 0, True], [0.0, True], # 5, 6, 7, 8
                                             [0.0, 0, True], [0.0, True], [0.0, True], [0.0, True],  # 9, 10, 11, 12
                                             [0.0, True], [0.0, True], [0.0, True], [0.0, True], # 13, 14, 15, 16
@@ -616,121 +598,116 @@ def index(request):
                                         if s['pop_total'] is not None:
                                             pop_total += s['pop_total']
 
-                                        if s['pop_ocupada'] is not None and not np.isnan(s['pop_ocupada']):
-                                            reg_dados[r.id][ano]['socioeconomico'][0][0] += s['pop_ocupada']
-                                        else:
-                                            reg_dados[r.id][ano]['socioeconomico'][0][1] = False
-
                                         if s['idhm'] is not None and not np.isnan(s['idhm']):
-                                            reg_dados[r.id][ano]['socioeconomico'][1][0] += s['idhm']
+                                            reg_dados[r.id][ano]['socioeconomico'][0][0] += s['idhm']
+                                            reg_dados[r.id][ano]['socioeconomico'][0][1] += 1
+                                        else:
+                                            reg_dados[r.id][ano]['socioeconomico'][0][2] = False
+
+                                        if s['idhm_renda'] is not None and not np.isnan(s['idhm_renda']):
+                                            reg_dados[r.id][ano]['socioeconomico'][1][0] += s['idhm_renda']
                                             reg_dados[r.id][ano]['socioeconomico'][1][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][1][2] = False
 
-                                        if s['idhm_renda'] is not None and not np.isnan(s['idhm_renda']):
-                                            reg_dados[r.id][ano]['socioeconomico'][2][0] += s['idhm_renda']
+                                        if s['idhm_longevidade'] is not None and not np.isnan(s['idhm_longevidade']):
+                                            reg_dados[r.id][ano]['socioeconomico'][2][0] += s['idhm_longevidade']
                                             reg_dados[r.id][ano]['socioeconomico'][2][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][2][2] = False
 
-                                        if s['idhm_longevidade'] is not None and not np.isnan(s['idhm_longevidade']):
-                                            reg_dados[r.id][ano]['socioeconomico'][3][0] += s['idhm_longevidade']
+                                        if s['idhm_educacao'] is not None and not np.isnan(s['idhm_educacao']):
+                                            reg_dados[r.id][ano]['socioeconomico'][3][0] += s['idhm_educacao']
                                             reg_dados[r.id][ano]['socioeconomico'][3][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][3][2] = False
 
-                                        if s['idhm_educacao'] is not None and not np.isnan(s['idhm_educacao']):
-                                            reg_dados[r.id][ano]['socioeconomico'][4][0] += s['idhm_educacao']
+                                        if s['expc_vida'] is not None and not np.isnan(s['expc_vida']):
+                                            reg_dados[r.id][ano]['socioeconomico'][4][0] += s['expc_vida']
                                             reg_dados[r.id][ano]['socioeconomico'][4][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][4][2] = False
 
-                                        if s['expc_vida'] is not None and not np.isnan(s['expc_vida']):
-                                            reg_dados[r.id][ano]['socioeconomico'][5][0] += s['expc_vida']
+                                        if s['prob_60anos'] is not None and not np.isnan(s['prob_60anos']):
+                                            reg_dados[r.id][ano]['socioeconomico'][5][0] += s['prob_60anos']
                                             reg_dados[r.id][ano]['socioeconomico'][5][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][5][2] = False
 
-                                        if s['prob_60anos'] is not None and not np.isnan(s['prob_60anos']):
-                                            reg_dados[r.id][ano]['socioeconomico'][6][0] += s['prob_60anos']
+                                        if s['expc_anos_estudo18'] is not None and not np.isnan(s['expc_anos_estudo18']):
+                                            reg_dados[r.id][ano]['socioeconomico'][6][0] += s['expc_anos_estudo18']
                                             reg_dados[r.id][ano]['socioeconomico'][6][1] += 1
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][6][2] = False
 
-                                        if s['expc_anos_estudo18'] is not None and not np.isnan(s['expc_anos_estudo18']):
-                                            reg_dados[r.id][ano]['socioeconomico'][7][0] += s['expc_anos_estudo18']
-                                            reg_dados[r.id][ano]['socioeconomico'][7][1] += 1
-                                        else:
-                                            reg_dados[r.id][ano]['socioeconomico'][7][2] = False
-
                                         if s['renda_pc'] is not None and not np.isnan(s['renda_pc']):
-                                            reg_dados[r.id][ano]['socioeconomico'][8][0] += s['renda_pc']
+                                            reg_dados[r.id][ano]['socioeconomico'][7][0] += s['renda_pc']
                                         else:
-                                            reg_dados[r.id][ano]['socioeconomico'][8][1] = False
+                                            reg_dados[r.id][ano]['socioeconomico'][7][1] = False
 
                                         if s['salario_trab_form'] is not None and not np.isnan(s['salario_trab_form']):
-                                            reg_dados[r.id][ano]['socioeconomico'][9][0] += s['salario_trab_form']
-                                            reg_dados[r.id][ano]['socioeconomico'][9][1] += 1
+                                            reg_dados[r.id][ano]['socioeconomico'][8][0] += s['salario_trab_form']
+                                            reg_dados[r.id][ano]['socioeconomico'][8][1] += 1
                                         else:
-                                            reg_dados[r.id][ano]['socioeconomico'][9][2] = False
+                                            reg_dados[r.id][ano]['socioeconomico'][8][2] = False
 
                                         if s['prop_extr_pobre'] is not None and not np.isnan(s['prop_extr_pobre']):
-                                            reg_dados[r.id][ano]['socioeconomico'][10][0] += s['prop_extr_pobre']
+                                            reg_dados[r.id][ano]['socioeconomico'][9][0] += s['prop_extr_pobre']
+                                        else:
+                                            reg_dados[r.id][ano]['socioeconomico'][9][1] = False
+
+                                        if s['prop_pobre'] is not None and not np.isnan(s['prop_pobre']):
+                                            reg_dados[r.id][ano]['socioeconomico'][10][0] += s['prop_pobre']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][10][1] = False
 
-                                        if s['prop_pobre'] is not None and not np.isnan(s['prop_pobre']):
-                                            reg_dados[r.id][ano]['socioeconomico'][11][0] += s['prop_pobre']
+                                        if s['prop_vuln_pobre'] is not None and not np.isnan(s['prop_vuln_pobre']):
+                                            reg_dados[r.id][ano]['socioeconomico'][11][0] += s['prop_vuln_pobre']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][11][1] = False
 
-                                        if s['prop_vuln_pobre'] is not None and not np.isnan(s['prop_vuln_pobre']):
-                                            reg_dados[r.id][ano]['socioeconomico'][12][0] += s['prop_vuln_pobre']
+                                        if s['taxa_analfab_15mais'] is not None and not np.isnan(s['taxa_analfab_15mais']):
+                                            reg_dados[r.id][ano]['socioeconomico'][12][0] += s['taxa_analfab_15mais']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][12][1] = False
 
-                                        if s['taxa_analfab_15mais'] is not None and not np.isnan(s['taxa_analfab_15mais']):
-                                            reg_dados[r.id][ano]['socioeconomico'][13][0] += s['taxa_analfab_15mais']
+                                        if s['ideb_inicias'] is not None and not np.isnan(s['ideb_inicias']):
+                                            reg_dados[r.id][ano]['socioeconomico'][13][0] += s['ideb_inicias']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][13][1] = False
 
-                                        if s['ideb_inicias'] is not None and not np.isnan(s['ideb_inicias']):
-                                            reg_dados[r.id][ano]['socioeconomico'][14][0] += s['ideb_inicias']
+                                        if s['ideb_finais'] is not None and not np.isnan(s['ideb_finais']):
+                                            reg_dados[r.id][ano]['socioeconomico'][14][0] += s['ideb_finais']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][14][1] = False
 
-                                        if s['ideb_finais'] is not None and not np.isnan(s['ideb_finais']):
-                                            reg_dados[r.id][ano]['socioeconomico'][15][0] += s['ideb_finais']
+                                        if s['perc_pop_agua_enc'] is not None and not np.isnan(s['perc_pop_agua_enc']):
+                                            reg_dados[r.id][ano]['socioeconomico'][15][0] += s['perc_pop_agua_enc']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][15][1] = False
 
-                                        if s['perc_pop_agua_enc'] is not None and not np.isnan(s['perc_pop_agua_enc']):
-                                            reg_dados[r.id][ano]['socioeconomico'][16][0] += s['perc_pop_agua_enc']
+                                        if s['perc_pop_eletricidade'] is not None and not np.isnan(s['perc_pop_eletricidade']):
+                                            reg_dados[r.id][ano]['socioeconomico'][16][0] += s['perc_pop_eletricidade']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][16][1] = False
 
-                                        if s['perc_pop_eletricidade'] is not None and not np.isnan(s['perc_pop_eletricidade']):
-                                            reg_dados[r.id][ano]['socioeconomico'][17][0] += s['perc_pop_eletricidade']
+                                        if s['esg_sanit_adequado'] is not None and not np.isnan(s['esg_sanit_adequado']):
+                                            reg_dados[r.id][ano]['socioeconomico'][17][0] += s['esg_sanit_adequado']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][17][1] = False
 
-                                        if s['esg_sanit_adequado'] is not None and not np.isnan(s['esg_sanit_adequado']):
-                                            reg_dados[r.id][ano]['socioeconomico'][18][0] += s['esg_sanit_adequado']
+                                        if s['perc_pop_esg_inadequado'] is not None and not np.isnan(s['perc_pop_esg_inadequado']):
+                                            reg_dados[r.id][ano]['socioeconomico'][18][0] += s['perc_pop_esg_inadequado']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][18][1] = False
 
-                                        if s['perc_pop_esg_inadequado'] is not None and not np.isnan(s['perc_pop_esg_inadequado']):
-                                            reg_dados[r.id][ano]['socioeconomico'][19][0] += s['perc_pop_esg_inadequado']
+                                        if s['perc_urban_vias_public'] is not None and not np.isnan(s['perc_urban_vias_public']):
+                                            reg_dados[r.id][ano]['socioeconomico'][19][0] += s['perc_urban_vias_public']
                                         else:
                                             reg_dados[r.id][ano]['socioeconomico'][19][1] = False
-
-                                        if s['perc_urban_vias_public'] is not None and not np.isnan(s['perc_urban_vias_public']):
-                                            reg_dados[r.id][ano]['socioeconomico'][20][0] += s['perc_urban_vias_public']
-                                        else:
-                                            reg_dados[r.id][ano]['socioeconomico'][20][1] = False
-
-                                    reg_dados[r.id][ano]['socioeconomico'][0][0] = (reg_dados[r.id][ano]['socioeconomico'][0][0] / (pop_total or np.nan)) * 100
-                                    reg_dados[r.id][ano]['socioeconomico'][8][0] = (reg_dados[r.id][ano]['socioeconomico'][8][0] / (pop_total or np.nan)) * 100
+                                    
+                                    reg_dados[r.id][ano]['socioeconomico'][7][0] = (reg_dados[r.id][ano]['socioeconomico'][7][0] / (pop_total or np.nan)) * 100
+                                    reg_dados[r.id][ano]['socioeconomico'][9][0] = (reg_dados[r.id][ano]['socioeconomico'][9][0] / (pop_total or np.nan)) * 100
                                     reg_dados[r.id][ano]['socioeconomico'][10][0] = (reg_dados[r.id][ano]['socioeconomico'][10][0] / (pop_total or np.nan)) * 100
                                     reg_dados[r.id][ano]['socioeconomico'][11][0] = (reg_dados[r.id][ano]['socioeconomico'][11][0] / (pop_total or np.nan)) * 100
                                     reg_dados[r.id][ano]['socioeconomico'][12][0] = (reg_dados[r.id][ano]['socioeconomico'][12][0] / (pop_total or np.nan)) * 100
@@ -741,16 +718,15 @@ def index(request):
                                     reg_dados[r.id][ano]['socioeconomico'][17][0] = (reg_dados[r.id][ano]['socioeconomico'][17][0] / (pop_total or np.nan)) * 100
                                     reg_dados[r.id][ano]['socioeconomico'][18][0] = (reg_dados[r.id][ano]['socioeconomico'][18][0] / (pop_total or np.nan)) * 100
                                     reg_dados[r.id][ano]['socioeconomico'][19][0] = (reg_dados[r.id][ano]['socioeconomico'][19][0] / (pop_total or np.nan)) * 100
-                                    reg_dados[r.id][ano]['socioeconomico'][20][0] = (reg_dados[r.id][ano]['socioeconomico'][20][0] / (pop_total or np.nan)) * 100
 
-                                    reg_dados[r.id][ano]['socioeconomico'][1] = [reg_dados[r.id][ano]['socioeconomico'][1][0] / (reg_dados[r.id][ano]['socioeconomico'][1][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][1][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][2] = [reg_dados[r.id][ano]['socioeconomico'][2][0] / (reg_dados[r.id][ano]['socioeconomico'][2][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][2][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][3] = [reg_dados[r.id][ano]['socioeconomico'][3][0] / (reg_dados[r.id][ano]['socioeconomico'][3][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][3][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][4] = [reg_dados[r.id][ano]['socioeconomico'][4][0] / (reg_dados[r.id][ano]['socioeconomico'][4][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][4][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][5] = [reg_dados[r.id][ano]['socioeconomico'][5][0] / (reg_dados[r.id][ano]['socioeconomico'][5][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][5][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][6] = [reg_dados[r.id][ano]['socioeconomico'][6][0] / (reg_dados[r.id][ano]['socioeconomico'][6][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][6][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][7] = [reg_dados[r.id][ano]['socioeconomico'][7][0] / (reg_dados[r.id][ano]['socioeconomico'][7][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][7][2]]
-                                    reg_dados[r.id][ano]['socioeconomico'][9] = [reg_dados[r.id][ano]['socioeconomico'][9][0] / (reg_dados[r.id][ano]['socioeconomico'][9][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][9][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][0] = [reg_dados[r.id][ano]['socioeconomico'][0][0] / (reg_dados[r.id][ano]['socioeconomico'][1][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][0][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][1] = [reg_dados[r.id][ano]['socioeconomico'][1][0] / (reg_dados[r.id][ano]['socioeconomico'][2][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][1][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][2] = [reg_dados[r.id][ano]['socioeconomico'][2][0] / (reg_dados[r.id][ano]['socioeconomico'][3][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][2][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][3] = [reg_dados[r.id][ano]['socioeconomico'][3][0] / (reg_dados[r.id][ano]['socioeconomico'][4][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][3][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][4] = [reg_dados[r.id][ano]['socioeconomico'][4][0] / (reg_dados[r.id][ano]['socioeconomico'][5][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][4][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][5] = [reg_dados[r.id][ano]['socioeconomico'][5][0] / (reg_dados[r.id][ano]['socioeconomico'][6][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][5][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][6] = [reg_dados[r.id][ano]['socioeconomico'][6][0] / (reg_dados[r.id][ano]['socioeconomico'][7][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][6][2]]
+                                    reg_dados[r.id][ano]['socioeconomico'][8] = [reg_dados[r.id][ano]['socioeconomico'][8][0] / (reg_dados[r.id][ano]['socioeconomico'][9][1] or np.nan), reg_dados[r.id][ano]['socioeconomico'][8][2]]
 
                                     for aux in reg_dados[r.id][ano]['socioeconomico']:
                                         if not aux[0]:
