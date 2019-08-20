@@ -86,20 +86,8 @@ class FormUsos(forms.Form):
 
 FormsetUsos = forms.formset_factory(FormUsos, extra=0)
 
-# }
-# formset_subs = FormsetSubs(data)
 
 class FormTitulo(forms.ModelForm):
-    # cpf = forms.CharField(label='CPF', max_length=11, required=False)
-    # cnpj = forms.CharField(label='CNPJ', max_length=14, required=False)
-
-    # t_subs = titulos_minerarios.objects.values('subs')
-    # print(t_subs)
-    # numero = forms.IntegerField(label='Número do processo', required=False)
-    # ano = forms.ChoiceField(label='Ano do processo', choices=ct.ano_chs(), required=False)
-    # subs = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs_tm, required=False)
-    # uso = forms.ChoiceField(label='Tipo de uso', choices=ct.t_uso_tm, required=False)
-
 
     class Meta:
         model = titulos_minerarios
@@ -118,10 +106,6 @@ class FormTitulo(forms.ModelForm):
             'pessoa_juridica': 'Pessoa Jurídica'
         }
 
-    # pf = forms.BooleanField(label='Pessoa Física', required=False)
-    # pj = forms.BooleanField(label='Pessoa Jurídica', required=False)
-
-
     form_subs = FormsetSubs(prefix='fsubs') # check
     form_usos = FormsetUsos(prefix='fusos')
 
@@ -138,11 +122,6 @@ class FormTitulo(forms.ModelForm):
         for f in self.fields:
             self.fields[f].required = False
 
-        # ToDo: checar como deixar vazio o campo de IntegerField
-        # ToDo: checar o que fazer com o ano do processo
-
-
-# FormsetTitulo = forms.formset_factory(FormTitulo, formset=BaseSubs, can_delete=True)
 
 class FormVars(forms.Form):
 
@@ -166,9 +145,6 @@ class FormVars(forms.Form):
                 id='teste', name='teste'
             )
         )
-
-    # vars.widget.attrs.update({'class': 'col-md-4 select form-control'})
-    # rep.widget.attrs.update({'class': 'col-md-2 select form-control'})
 
 FormsetVars = forms.formset_factory(FormVars, extra=0)
 
@@ -194,8 +170,6 @@ class FormAnalisar(forms.Form):
     )
 
     tipo_analise = forms.ChoiceField(label='', widget=forms.RadioSelect, choices=t_tipo_analise, required=False)
-    # all_subs = forms.BooleanField(label='Substratos x Região', required=False)
-    # cruzar = forms.BooleanField(label='Cruzar dados por substrato', required=False)
     subs_cr = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs, required=False)
     dados = forms.ChoiceField(label='Cruzar com:', widget=forms.RadioSelect, choices=dados_c, required=False)
     an_ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs(), required=False)
@@ -203,7 +177,6 @@ class FormAnalisar(forms.Form):
 
     ano_i_t = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs(), required=False)
     ano_f_t = forms.ChoiceField(label='Ano final', choices=ct.ano_chs(), required=False)
-    # apresentar = forms.BooleanField(label='Apresentar dado no mapa', required=False)
     variavel = forms.ChoiceField(label='Variável', choices=ct.t_variaveis_pesq, required=False)
     opc_arr = forms.ChoiceField(label='', widget=forms.RadioSelect, choices=t_opc_arr, required=False)
     subs_ap = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs, required=False)

@@ -1,5 +1,4 @@
 function drawChart() {
-    // ToDo: checar antes se aba já está aberta
     $('#graficos').collapse('show')
     let title = null
 
@@ -52,7 +51,6 @@ function drawChart() {
 }
 
 function drawChart_uf() {
-    // ToDo: checar antes se aba já está aberta
     $('#graficos').collapse('show')
     var data = google.visualization.arrayToDataTable(temporal[4][0]);
 

@@ -140,16 +140,11 @@ def index(request):
                         if res:
                             df_dm = pd.DataFrame(res)
                             df_dm['populacao_total'] = df_dm['populacao_urbana'] + df_dm['populacao_rural']
-                        else:
-                            pass
-
                     # busca pelos campos marcados
                     else:
                         dm = q_campos(dm, list(ct.d_bd_dm.keys()), keys, ct.d_bd_dm)
                         if dm:
                             df_dm = pd.DataFrame(list(dm))
-                        else:
-                            print('Nenhum campo marcado')
 
                     if df_dm is not None:
                         dfs.append(df_dm) # acrescentando na lista de todas tabelas selecionadas
@@ -164,16 +159,12 @@ def index(request):
                         res = list(ec.values())
                         if res:
                             df_ec = pd.DataFrame(res)
-                        else:
-                            pass
 
                     # busca pelos campos marcados
                     else:
                         ec = q_campos(ec, list(ct.d_bd_ec.keys()), keys, ct.d_bd_ec)
                         if ec:
                             df_ec = pd.DataFrame(list(ec))
-                        else:
-                            print('Nenhum campo marcado')
 
                     if df_ec is not None:
                         dfs.append(df_ec) # acrescentando na lista de todas tabelas selecionadas
@@ -188,25 +179,17 @@ def index(request):
                         res = list(sc.values())
                         if res:
                             df_sc = pd.DataFrame(res)
-                        else:
-                            pass
 
                     # busca pelos campos marcados
                     else:
                         sc = q_campos(sc, list(ct.d_bd_sc.keys()), keys, ct.d_bd_sc)
                         if sc:
                             df_sc = pd.DataFrame(list(sc))
-                        else:
-                            print('Nenhum campo marcado')
 
                     if df_sc is not None:
                         dfs.append(df_sc) # acrescentando na lista de todas tabelas selecionadas
 
                 if 'ar' in request.GET: # caso Arrecadação esteja marcado
-                    # ar = arrecadacao.objects.filter(ano__in=anos)
-                    # if re_ci:
-                    #     ar = ar.filter(cidade__id__in=re_ci)
-
                     ar = cfem.objects.filter(ano__in=anos)
                     if re_ci:
                         ar = ar.filter(cidade__id__in=re_ci)
@@ -254,29 +237,22 @@ def index(request):
                     valores_catg(df_final)
                     df_final.sort_values('ano', inplace=True)
 
-                    # disponibilizar para download - ToDo: colocar em um botão na janela em que serão apresentados os resultados
                     response = HttpResponse(content_type='text/csv')
                     response['Content-Disposition'] = 'attachment; filename=results.csv'
-                    print(df_final)
                     df_final.to_csv(path_or_buf=response, index=False, sep=';', decimal=',')
                     return response
 
-                else: # retornar erro
-                    print('Nenhuma busca')
+                else:  # retorna json vazio para ser tratado no js
                     return HttpResponse(json.dumps(None), content_type='application/json')
 
             ## caso form de Títulos for chamado ##
             if form_selecionado == 1:
-                print('-'*30)
-                print('Entrou Form Titulo')
-                print(request.GET.keys())
-                print('-'*30)
 
                 ids = request.GET['ids_tit'] # código das regiões selecionadas
 
                 cids = cidades.objects.filter(geom__intersects=OuterRef('geom'))
                 # primeira filtragem por numero/ano do processo ou buscar pela região
-                if 'pesq_num_ano' in request.GET: #ToDO: filtrar se está correto o numero
+                if 'pesq_num_ano' in request.GET:
                     num = request.GET['numero']
                     ano = request.GET['ano']
                     titulos = titulos_minerarios.objects.filter(numero=num, ano=ano)
@@ -319,7 +295,6 @@ def index(request):
                     titulos = titulos.filter(uso__in=usos)
 
                 # filtro por pf ou pj
-                # ToDo: Checar porque 'pes' não tá indo no get
                 if 'pes' in request.GET:
                     if request.GET['pes'] == '1': #1 - pessoa fisca; 2 - pessoa juridica
                         pf = int(request.GET['pessoa_fisica'])
@@ -349,7 +324,6 @@ def index(request):
             ## caso form de Análise for chamado ##
             if form_selecionado == 2:
                 print('Entrou form Analisar')
-                print(request.GET.keys())
 
                 reg_dados = None
                 reg = None # auxiliar que irá conter a união da geometria das regiões selecionadas
@@ -458,10 +432,7 @@ def index(request):
                             elif request.GET['dados'] == '2':
 
 
-                                # pop = demografico.objects.filter(cidade__in=cid, ano=2017).values('cidade', 'populacao_total') # pegando somente do último ano, mas melhor seria ter pro ano dos dados economicos
                                 pop = demografico.objects.filter(cidade=OuterRef('cidade'))
-                                # print(pop.get(cidade_id=5101258))
-                                # //## TROCAR pop_ativa PARA pop_ativa_18mais ##//
                                 ec = economia.objects.filter(cidade__in=cid, ano=ano)\
                                     .values('id', 'receitas', 'receitas_fontext', 'despesas', 'pop_ativa_18mais')\
                                     .annotate(
@@ -795,7 +766,6 @@ def index(request):
 
                     reg_dados['visao'] = visao
                     reg_dados['resultado_analise'] = ct.d_opcs[request.GET['dados']]
-                    print(json.dumps(reg_dados))
 
                     return HttpResponse(json.dumps(reg_dados), content_type='application/json')
 
@@ -821,7 +791,6 @@ def index(request):
                             if request.GET['opc_arr'] == '2':
                                 extras['subs'] = int(request.GET['subs_ap'])
                         reg_val = qr.get_val_var(3, reg, id_var, ano, visao, extras)
-                        print(reg_val)
                         vals = [x for x in list(reg_val.values()) if x and x != 'nan']
                         maior = None
                         menor = None
@@ -829,8 +798,9 @@ def index(request):
                             maior = max(vals)
                             menor = min(vals)
 
-                        # ToDo: acrescentar ano em var para aparecer na legenda
-                        dados_apr = {'var': ct.d_variaveis_pesq[id_var] + ((' - ' + ct.d_subs[int(request.GET['subs_ap'])]) if 'subs' in request.GET and id_var < 4 else ''),
+                        dados_apr = {'var': ct.d_variaveis_pesq[id_var] + \
+                                        ((' - ' + ct.d_subs[int(request.GET['subs_ap'])]) if 'subs' in request.GET and id_var < 4 else '') + \
+                                            f' - {ano}',
                                     'result': reg_val,
                                     'max': maior, # problema ao procurar max e min em alguns dados ('>' not supported between instances of 'dict' and 'dict') update: provavelmente porque está tudo vazio
                                     'min': menor,

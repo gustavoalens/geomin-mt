@@ -52,15 +52,6 @@ var vl_mapas = new ol.layer.Vector({
     zIndex: 200,
 })
 
-// Layer para apresentar resultados de variáveis em "discos"
-var vl_cluster = new ol.layer.Vector({
-    source: new ol.source.Vector(),
-    style: style_cluster,
-    name: lCluster,
-    zIndex: 300,
-})
-
-
 // criando o elemento pra ser adicionado na frente do mapa
 let overlay = new ol.Overlay({
     element: container,

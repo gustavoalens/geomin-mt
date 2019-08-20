@@ -29,21 +29,6 @@ d_opcs = {
     '3': 'Socioeconômico',
 }
 
-# Dicionário p/ tipos de atv. economica, usado p/ transf. colunas catg.
-# d_atv_ec = {
-#     0: 'Sem registro',
-#     1: 'Indústrias de transformação',
-#     2: 'Indústrias extrativas',
-#     3: 'Construção',
-#     4: 'Agricultura, inclusive apoio à agricultura e a pós colheita',
-#     5: 'Administração, educação, saúde, pesquisa e desenvolvimento públicas, defesa, seguridade social',
-#     6: 'Comércio e reparação de veículos automotores e motocicletas',
-#     7: 'Produção florestal, pesca e aquicultura',
-#     8: 'Pecuária, inclusive apoio à pecuária',
-#     9: 'Eletricidade e gás, água, esgoto, atividades de gestão de resíduos e descontaminação',
-#     10: 'Demais serviços',
-# }
-
 d_atv_ec = {
     0: 'Sem registro',
     1: 'Administração, defesa, educação e saúde públicas e seguridade social',
@@ -300,11 +285,6 @@ d_bd_sc = {
     'sc_perc_urban_vias_public': 'perc_urban_vias_public',
 }
 
-# nomes dos campos no formulários e bd da tabela arrecadação
-d_bd_ar = {
-
-}
-
 t_variaveis_pesq = (
     (0, '-------'), (1, 'Arrecadação CFEM'), (2, 'Quantidade de substrato comercializada'),
     (3, 'Arrecadação TAH'), (4, 'População'), (5, 'População urbana'), (6, 'População rural'),
@@ -376,9 +356,6 @@ d_variaveis_calc = {
     'idhm': [7, 8, 9, 10],
     'ideb': [20, 21],
     'pib_pc': 28,
-    # 11, 12 e 13 expectativa de vida, probabildiade de 60 anos e expc de estudo
-    # 15 salario trabalhador formal
-    #
 }
 
 # nome da chave estrangeira do id da cidade no bd
@@ -405,20 +382,6 @@ t_atv_min = (
     (10, 'Argila'),
     (11, 'Areia'),
 )
-
-# tupla p/ usar limitar o choices do modelo
-# t_atv_ec = (
-#     (1, 'Indústrias de transformação'),
-#     (2, 'Indústrias extrativas'),
-#     (3, 'Construção'),
-#     (4, 'Agricultura, inclusive apoio à agricultura e a pós colheita'),
-#     (5, 'Administração, educação, saúde, pesquisa e desenvolvimento públicas, defesa, seguridade social'),
-#     (6, 'Comércio e reparação de veículos automotores e motocicletas'),
-#     (7, 'Produção florestal, pesca e aquicultura'),
-#     (8, 'Pecuária, inclusive apoio à pecuária'),
-#     (9, 'Eletricidade e gás, água, esgoto, atividades de gestão de resíduos e descontaminação'),
-#     (10, 'Demais serviços'),
-# )
 
 t_atv_ec = (
     (0, 'Sem registro'),

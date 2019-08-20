@@ -1,5 +1,4 @@
 ////# Constante de cores e tamanhos p/ styles #////
-// ToDo: add cores do cluster caso for manter
 const stroke_mapa_color = '#2489b7'
 const stroke_mapa_result_color = '#000'
 const stroke_road_color = '#E27FA3'
@@ -39,7 +38,6 @@ const stroke_aerodromos = {
 const fill_titulo = 'rgba(255, 255, 255, 0)'
 const fill_mapa_color = 'rgba(230, 230, 230, 0.2)'
 const fill_mapa_selected_color = 'rgba(50, 50, 50, 0.3)'
-const fill_cluster_color = '#3399CC'
 
 const fill_text_lightbackg = '#000'
 const fill_text_darkbackg = '#fff'
@@ -125,7 +123,7 @@ var styleRegioes = function(feature) {
                 width: width_bordas,
             }),
             text: new ol.style.Text({
-                text: check_float(feature.get('data'), 2),
+                text: check_float(feature.get('data'), 3),
                 // text: feature.values_.features[0].values_.data.toFixed(2).toString(),
                 fill: new ol.style.Fill({
                     color: fill_text_lightbackg
@@ -190,32 +188,6 @@ var style_sisvias = function(feature) {
 }
 
 
-
-// Style para layer de cluster (resultado em "discos" para variaveis)
-var style_cluster = function(feature) {
-    var style = new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: (feature.get('data_nm') + 1.2) * 20, //calculo extra apenas para aumentar tamanho dos discos
-            // stroke: new ol.style.Stroke({
-            //     color: stroke_mapa_color
-            // }),
-            fill: new ol.style.Fill({
-                color: fill_cluster_color
-            }),
-
-        }),
-        text: new ol.style.Text({
-            text: feature.get('data').toFixed(2).toString(),
-            // text: feature.values_.features[0].values_.data.toFixed(2).toString(),
-            fill: new ol.style.Fill({
-                color: fill_text_darkbackg
-            })
-        })
-    })
-    return style
-}
-
-
 // Style para adicionar efeito de seleção à região clicada
 var style_select = new ol.style.Style({
     fill: new ol.style.Fill({
@@ -234,4 +206,3 @@ const lVias = 'viarios'
 const lViasPontos = 'vpontos'
 const lMapa = 'mapa'
 const lTitulos = 'titulos'
-const lCluster = 'cluster'
