@@ -491,6 +491,15 @@ function refresh_interaction_mapa(){
     
 }
 
+// função para checar campos de ano inicial e ano final
+function check_ano_i2ano_f(id_ano_i, id_ano_f){
+    let obj_ano_i = document.getElementById(id_ano_i)
+    let obj_ano_f = document.getElementById(id_ano_f)
+    let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
+    let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
+    return ano_f >= ano_i
+}
+
 $('#error_modal').on('hidden.bs.modal', function(){
     $('#error_modal_text').empty()
 })

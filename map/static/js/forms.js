@@ -418,6 +418,7 @@ $('#fTitulo').submit(function(eventObj) {
 
     let ok = true
 
+    // Caso selecionado opção de pesquisa de título específico
     if ($('#id_pesq_num_ano').is(':checked')){
         if (!$('#id_numero').val()){
             $('#error_modal_text').append('É necessário inserir o número do Título Minerário')
@@ -426,22 +427,27 @@ $('#fTitulo').submit(function(eventObj) {
         }
     }
 
+    // caso selecionado pessoa física ou juridica
     else if ($('#id_pesq_pf_pj').is(':checked')){
+        // verifica se nenhum tipo de pessoa foi selecionado
         if (!$('input[name="pes"]:checked').val()){
             $('#error_modal_text').append('É necessário selecionar qual tipo de pessoa irá filtrar')
             $('#error_modal').modal('show')
             ok = false
         }
         else {
+            // caso pessoa física seja selecionado
             if ($('#id_pes_1').is(':checked')){
+                // verifica se nenhuma pessoa foi escolhida para pesquisa
                 if ($('#id_pessoa_fisica').find(':selected').val() == 0){
                     $('#error_modal_text').append('É necessário selecionar uma pessoa física')
                     $('#error_modal').modal('show')
                     ok = false
                 }
             }
-
+            // caso pessoa jurídica seja selecionado
             else if ($('#id_pes_2').is(':checked')){
+                // verifica se nenhuma pessoa foi escolhida para pesquisa
                 if ($('#id_pessoa_juridica').find(':selected').val() == 0){
                     $('#error_modal_text').append('É necessário selecionar uma pessoa jurídica')
                     $('#error_modal').modal('show')
@@ -463,8 +469,8 @@ $('#fTitulo').submit(function(eventObj) {
             }
         }
 
-        document.getElementById('ids_tit').value = ids.toString();
-        document.getElementById('visao_tit').value = visao.toString();
+        document.getElementById('ids_tit').value = ids.toString(); // ids das regiões selecionadas
+        document.getElementById('visao_tit').value = visao.toString(); // tipo de subdivisão que teve região selecionada
 
 
         let subs = organiza_subs_usos('fsubs-sub') // checando e listando subs adicionado p pesquisa
@@ -512,11 +518,7 @@ $('#fDownload').submit(function(eventObj) {
     event.preventDefault()
     let ok = true
 
-    let obj_ano_i = document.getElementById('id_dw_ano_i')
-    let obj_ano_f = document.getElementById('id_dw_ano_f')
-    let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
-    let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
-    if (ano_i > ano_f){
+    if (check_ano_i2ano_f('id_dw_ano_i', 'id_dw_ano_f')){
         $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
         $('#error_modal').modal('show')
         ok = false
@@ -617,90 +619,89 @@ $('#fAnalisar').submit(function(eventObj) {
 
     let ok = true
 
+    // verifica se nenhuma opção foi selecionada
     if (!$('input[name="tipo_analise"]:checked').val()){
         $('#error_modal_text').append('Nenhum tipo de análise foi selecionado')
         $('#error_modal').modal('show')
         ok = false
     } else {
         let data = $('#fAnalisar').serialize()
+        // Caso opção cruzar dados seja selecionada
         if ($('#id_tipo_analise_2').is(':checked')){
+            // verifica se foi escolhido um tipo de substrato
             if ($("#id_subs_cr").find(':selected').val() == 0){
                 $('#error_modal_text').append('É necessário selecionar um tipo de substrato para cruzar os dados')
                 $('#error_modal').modal('show')
                 ok = false
             } 
+            // verifica se foi escolhido um tipo de grupo de dado para cruzar
             else if (!$('input[name="dados"]:checked').val()){
                 $('#error_modal_text').append('É necessário selecionar um tipo de dado para ser cruzado')
                 $('#error_modal').modal('show')
                 ok = false
             } 
+            // inicia checagem se ano inicial é menor ou igual ao ano final
             else {
-                let obj_ano_i = document.getElementById('id_an_ano_i')
-                let obj_ano_f = document.getElementById('id_an_ano_f')
-                let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
-                let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
-    
-                if (ano_i > ano_f){
+                if (check_ano_i2ano_f('id_an_ano_i', 'id_an_ano_f')){
                     $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
                     $('#error_modal').modal('show')
                     ok = false
                 }
             }
         } 
+        // Caso seja selecionado a análise de apresentar na tela
         else if ($('#id_tipo_analise_3').is(':checked')){
+            // caso não tenha sido selecionado nenhuma variável
             if ($("#id_variavel").find(':selected').val() == 0){
                 $('#error_modal_text').append('É necessário selecionar uma variável a ser apresentada')
                 $('#error_modal').modal('show')
                 ok = false
             }
         } 
+        // Caso opção Temporal selecionado
         else if ($('#id_tipo_analise_4').is(':checked')){
             var vars = []
+            // prepara o agrupamento das variáveis escolhidas
             $('[name=fvars-var]').each(function(){
                 let val = $(this).val()
                 if (val > 0){
                     vars.push(val)
                 }
             })
-            console.log(vars)
 
+            // verifica se nenhuma variável foi escolhida para pesquisa
             if (!vars.length){
                 $('#error_modal_text').append('É necessário selecionar ao menos uma variável a ser apresentada')
                 $('#error_modal').modal('show')
                 ok = false
             }
+            // checa ano inicial com ano final
             else {
-                let obj_ano_i = document.getElementById('id_ano_i_t')
-                let obj_ano_f = document.getElementById('id_ano_f_t')
-                let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
-                let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
-                if (ano_i > ano_f){
+                if (check_ano_i2ano_f('id_ano_i_t', 'id_ano_f_t')){
                     $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
                     $('#error_modal').modal('show')
                     ok = false
                 }
-
+                // caso tudo correto, prepara os ids das variáveis e extras se necessário
                 else {
-                    vars = '&vars=' + vars.toString() // preparando para inserir no form corrigido
+                    vars = '&vars=' + vars.toString() // preparando para inserir no form corrigido, facilitar leitura no servidor
                     let tp = {0: 'line', 1: 'bar'}
-                    tipos_rep = []
+                    tipos_rep = [] // reiniciliza array para salvar tipo de representação no gráfico (barra ou linha)
                     $('[name=fvars-rep]').each(function(){
                         tipos_rep.push($(this).val())
-                    })
+                    }) // prepara tipos_rep para salvar lista com representações no gráfico
 
                     let series = {}
                     for (let i in tipos_rep){
                         series[i] = {type: tp[tipos_rep[i]]}
                     }
-                    tipos_rep = series
+                    tipos_rep = series // organiza para o padrão do googlechart
 
-                    console.log(vars)
                     data = data.replace(/&fvars-vars/g, '') + vars // retirando fsubs e fusos do form e adiciona lista de ambos
                 }                
             }
         }
         
-
         if (ok) {
             console.log(data)
             $(".loader").css("display", "block");
@@ -709,11 +710,13 @@ $('#fAnalisar').submit(function(eventObj) {
                 url: '',
                 data: data,
                 success: function(response) {
+                    // caso haja resposta
                     if (response){
-                        limpa_results()
-                        visao_return = parseInt(response['visao'])
+                        limpa_results() // reinicia o mapa
+                        visao_return = parseInt(response['visao']) // troca de visão caso necessário
                         delete response.visao
 
+                        // checa que tipo de resultado foi requisitado
                         if (response['substratos_regiao']) {
                             delete response.substratos_regiao
                             substratos_regiao = response
@@ -737,13 +740,13 @@ $('#fAnalisar').submit(function(eventObj) {
                                     vis = vis_micro_res
                                     break;
                                 case 2: // caso selecionado Província
-                                    vis = vis_meso_res
+                                    vis = vis_meso_res // ToDo: alterar para provincia
                                     break;
                                 case 3: // caso selecionado Municípios
                                     vis = vis_muni_res
                                     break;
                                 }
-                            if (!dados_apr.max){
+                            if (!dados_apr.max){ // verifica se realmente encontrou dado (é possível que servidor inicie a tabela porém, com dados null ou nan)
                                 $('#error_modal_text').append('Nenhum dado foi encontrado')
                                 $('#error_modal').modal('show')
                             }
@@ -777,7 +780,4 @@ $('#fAnalisar').submit(function(eventObj) {
         } 
     }
 
-    
-
-    // return true;
 });

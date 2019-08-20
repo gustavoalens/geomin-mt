@@ -23,14 +23,6 @@ function drawChart() {
         title = 'MUNICÍPIO ' + get_nome(vis_muni)
     }
 
-    // let series = {}
-    // for (let i in tipos_rep){
-    //     console.log(tipos_rep[i])
-    //     series[i] = {type: tp[tipos_rep[i]]}
-    // }
-
-
-
     let data = google.visualization.arrayToDataTable(temporal[visao][pk_click]);
 
     let options = {

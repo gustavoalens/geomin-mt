@@ -417,6 +417,7 @@ else if(form_selecionado == 2) {
     $('#btn_analisar').trigger('click');
 }
 
+// inserindo funções nos clicks nas opções do navbar
 $('#nv-limpar').click(function(){
     limpa_results()
 })
@@ -430,7 +431,7 @@ $('#nv-vis_mic').click(function(){
 })
 
 $('#nv-vis_pro').click(function(){
-    muda_visao(0) // alterar para 2
+    muda_visao(0) // ToDo: alterar para 2 (provincia)
 })
 
 $('#nv-vis_mun').click(function(){
