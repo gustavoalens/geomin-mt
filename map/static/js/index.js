@@ -125,9 +125,12 @@ map.on('singleclick', function(evt) {
                         //coluna para resultantes da arrecadação CFEM
                         cfem = '<td>'
                         for (var un in resultado_analise[cod][anot]['cfem']){
-                            cfem += '\
-                                Quantidade: ' + check_float(resultado_analise[cod][anot]['cfem'][un][0], 4) + un + '<br>\
-                                Valor: R$' + check_float(resultado_analise[cod][anot]['cfem'][un][1], 2) + '<br>'
+                            let quantidade = check_float(resultado_analise[cod][anot]['cfem'][un][0], 4) // + un
+                            let valor = check_float(resultado_analise[cod][anot]['cfem'][un][1], 2)
+                            if (quantidade)
+                                cfem += 'Quantidade: ' + quantidade + un + '<br>' 
+                            if (valor)
+                                cfem += 'Valor: R$' + valor + '<br>'
                         }
                         cfem += '</td>'
 
@@ -135,61 +138,145 @@ map.on('singleclick', function(evt) {
 
                         // gerando coluna para demografico
                         if (resultado_analise[cod][anot]['demografico']){
-                            p = '\
-                                <td>População urbana: ' + resultado_analise[cod][anot]['demografico'][0] + '<br>\
-                                População rural: ' + resultado_analise[cod][anot]['demografico'][1] + '<br>\
-                                População total: ' + resultado_analise[cod][anot]['demografico'][2] + '<br>\
-                                </td>'
+                            let pop_urb = resultado_analise[cod][anot]['demografico'][0]
+                            let pop_rur = resultado_analise[cod][anot]['demografico'][1]
+                            let pop_tot = resultado_analise[cod][anot]['demografico'][2]
+                            
+                            p = '<td>'
+                            if (pop_urb)
+                                p += 'Populacao urbana: ' + pop_urb + '<br>'
+                            if (pop_rur)
+                                p += 'Populacao rural: ' + pop_rur + '<br>'
+                            if (pop_tot)
+                                p += 'Populacao total: ' + pop_tot + '<br>'
+                            p += '</td>'
                         }
 
                         // gerando coluna para economico
 
                         else if (resultado_analise[cod][anot]['economico']){
-                            p = '\
-                                <td>PIB per capita: R$ ' + check_float(resultado_analise[cod][anot]['economico'][0][0], 2) + '<br>\
-                                Receitas (fonte externa): R$ ' + check_float(resultado_analise[cod][anot]['economico'][1][0], 2) + '<br>\
-                                Receitas: R$ ' + check_float(resultado_analise[cod][anot]['economico'][2][0], 2) + '<br>\
-                                Despesas: R$ ' + check_float(resultado_analise[cod][anot]['economico'][3][0], 2) + '<br>\
-                                População ativa (18 anos +): ' + resultado_analise[cod][anot]['economico'][4][0] + '<br>\
-                                Ocupado no setor agropecuario: ' + check_float(resultado_analise[cod][anot]['economico'][5][0], 2) + '%<br>\
-                                Ocupado no setor de comércio: ' + check_float(resultado_analise[cod][anot]['economico'][6][0], 2) + '%<br>\
-                                Ocupado no setor de construção: ' + check_float(resultado_analise[cod][anot]['economico'][7][0], 2) + '%<br>\
-                                Ocupado no setor de mineração: ' + check_float(resultado_analise[cod][anot]['economico'][8][0], 2) + '%<br>\
-                                Ocupado no setor de industria de utilidade pública: ' + check_float(resultado_analise[cod][anot]['economico'][9][0], 2) + '%<br>\
-                                Ocupado no setor serviços: ' + check_float(resultado_analise[cod][anot]['economico'][10][0], 2) + '%<br>\
-                                Ocupado no setor industria de transformação: ' + check_float(resultado_analise[cod][anot]['economico'][11][0], 2) + '%<br>\
-                                Ocupado com grau de formação: ' + check_float(resultado_analise[cod][anot]['economico'][12][0], 2) + '%<br>\
-                                Ocupado com ensino fundamental: ' + check_float(resultado_analise[cod][anot]['economico'][13][0], 2) + '%<br>\
-                                Ocupado com ensino médio  : ' + check_float(resultado_analise[cod][anot]['economico'][14][0], 2) + '%<br>\
-                                Ocupado com ensino superior: ' + check_float(resultado_analise[cod][anot]['economico'][15][0], 2) + '%<br>\
-                                </td>'
+                            let pib_pc = check_float(resultado_analise[cod][anot]['economico'][0][0], 2)
+                            let rec_fext = check_float(resultado_analise[cod][anot]['economico'][1][0], 2)
+                            let receitas = check_float(resultado_analise[cod][anot]['economico'][2][0], 2)
+                            let despesas = check_float(resultado_analise[cod][anot]['economico'][3][0], 2)
+                            let pop_ativa = check_float(resultado_analise[cod][anot]['economico'][4][0], 0)
+                            let oc_agrop = check_float(resultado_analise[cod][anot]['economico'][5][0], 2)
+                            let oc_comer = check_float(resultado_analise[cod][anot]['economico'][6][0], 2)
+                            let oc_const = check_float(resultado_analise[cod][anot]['economico'][7][0], 2)
+                            let oc_miner = check_float(resultado_analise[cod][anot]['economico'][8][0], 2)
+                            let oc_indup = check_float(resultado_analise[cod][anot]['economico'][9][0], 2)
+                            let oc_servi = check_float(resultado_analise[cod][anot]['economico'][10][0], 2)
+                            let oc_indtr = check_float(resultado_analise[cod][anot]['economico'][11][0], 2)
+                            let oc_gform = check_float(resultado_analise[cod][anot]['economico'][12][0], 2)
+                            let oc_enfun = check_float(resultado_analise[cod][anot]['economico'][13][0], 2)
+                            let oc_enmed = check_float(resultado_analise[cod][anot]['economico'][14][0], 2)
+                            let oc_ensup = check_float(resultado_analise[cod][anot]['economico'][15][0], 2)
+                            
+                            p = '<td>'
+                            if (pib_pc)
+                                p += 'PIB per capita: R$ ' + pib_pc + '<br>'
+                            if (rec_fext)
+                                p += 'Receitas (fonte externa): R$ ' + rec_fext + '<br>'
+                            if (receitas)
+                                p += 'Receitas: R$ ' + receitas + '<br>'
+                            if (despesas)
+                                p += 'Despesas: R$ ' + despesas + '<br>'
+                            if (pop_ativa)
+                                p += 'População ativa (18 anos +): ' + pop_ativa + '<br>'
+                            if (oc_agrop)
+                                p += 'Ocupado no setor agropecuario: ' + oc_agrop + '%<br>'
+                            if (oc_comer)
+                                p += 'Ocupado no setor de comércio: ' + oc_comer + '%<br>'
+                            if (oc_const)
+                                p += 'Ocupado no setor de construção: ' + oc_const + '%<br>'
+                            if (oc_miner)
+                                p += 'Ocupado no setor de mineração: ' + oc_miner + '%<br>'
+                            if (oc_indup)
+                                p += 'Ocupado no setor de industria de utilidade pública: ' + oc_indup + '%<br>'
+                            if (oc_servi)
+                                p += 'Ocupado no setor serviços: ' + oc_servi + '%<br>'
+                            if (oc_indtr)
+                                p += 'Ocupado no setor industria de transformação: ' + oc_indtr + '%<br>'
+                            if (oc_gform)
+                                p += 'Ocupado com grau de formalização: ' + oc_gform + '%<br>'
+                            if (oc_enfun)
+                                p += 'Ocupado com ensino fundamental: ' + oc_enfun + '%<br>'
+                            if (oc_enmed)
+                                p += 'Ocupado com ensino médio  : ' + oc_enmed + '%<br>'
+                            if (oc_ensup)
+                                p += 'Ocupado com ensino superior: ' + oc_ensup + '%<br>'
+                            p += '</td>'
+                            
                         }
 
                         // gerando coluna para socioeconomico
                         else if (resultado_analise[cod][anot]['socioeconomico']) {
-                            p = '\
-                                <td>População ocupada: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][0][0], 2) + '%<br>\
-                                IDHM (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][1][0], 3) + '<br>\
-                                IHDM-Renda (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][2][0], 3) + '<br>\
-                                IDHM-Longevidade (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][3][0], 3) + '<br>\
-                                IDHM-Educação (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][4][0], 3) + '<br>\
-                                Expectativa de vida (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][5][0], 2) + '<br>\
-                                Probabilidade de alcançar 60 anos (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][6][0], 2) + '%<br>\
-                                Expectativa de anos de estudo (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][7][0], 2) + '<br>\
-                                Renda per capita: R$ ' + check_float(resultado_analise[cod][anot]['socioeconomico'][8][0], 2) + '<br>\
-                                Salário trabalho formal (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][9][0], 2) + '<br>\
-                                População em extrema pobreza: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][10][0], 2) + '%<br>\
-                                População em pobreza: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][11][0], 2) + '%<br>\
-                                População em vulnerabilidade a pobreza: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][12][0], 2) + '%<br>\
-                                Taxa de analfabetismo com 15 anos ou mais: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][13][0], 2) + '%<br>\
-                                IDEB - anos iniciais (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][14][0], 2) + '<br>\
-                                IDEB - anos finais (média da região): ' + check_float(resultado_analise[cod][anot]['socioeconomico'][15][0], 2) + '<br>\
-                                População com água encanada: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][16][0], 2) + '%<br>\
-                                População com energia elétrica: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][17][0], 2) + '%<br>\
-                                População com esgoto sanitário adequado: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][18][0], 2) + '%<br>\
-                                População com esgoto sanitário inadequado: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][19][0], 2) + '%<br>\
-                                Urbanização nas vias públicas: ' + check_float(resultado_analise[cod][anot]['socioeconomico'][20][0], 2) + '%<br>\
-                                </td>'
+                            let pop_ocup = check_float(resultado_analise[cod][anot]['socioeconomico'][0][0], 2)
+                            let idhm = check_float(resultado_analise[cod][anot]['socioeconomico'][1][0], 3)
+                            let idhm_renda = check_float(resultado_analise[cod][anot]['socioeconomico'][2][0], 3)
+                            let idhm_longv = check_float(resultado_analise[cod][anot]['socioeconomico'][3][0], 3)
+                            let idhm_educa = check_float(resultado_analise[cod][anot]['socioeconomico'][4][0], 3)
+                            let expc_vida = check_float(resultado_analise[cod][anot]['socioeconomico'][5][0], 2)
+                            let prob_60ans = check_float(resultado_analise[cod][anot]['socioeconomico'][6][0], 2)
+                            let exp_anestu = check_float(resultado_analise[cod][anot]['socioeconomico'][7][0], 2)
+                            let renda_pc = check_float(resultado_analise[cod][anot]['socioeconomico'][8][0], 2)
+                            let sal_tform = check_float(resultado_analise[cod][anot]['socioeconomico'][9][0], 2)
+                            let pop_extpob = check_float(resultado_analise[cod][anot]['socioeconomico'][10][0], 2)
+                            let pop_pobre = check_float(resultado_analise[cod][anot]['socioeconomico'][11][0], 2)
+                            let pop_vulpob = check_float(resultado_analise[cod][anot]['socioeconomico'][12][0], 2)
+                            let tx_analfab15 = check_float(resultado_analise[cod][anot]['socioeconomico'][13][0], 2)
+                            let ideb_inciais = check_float(resultado_analise[cod][anot]['socioeconomico'][14][0], 3)
+                            let ideb_finais = check_float(resultado_analise[cod][anot]['socioeconomico'][15][0], 3)
+                            let pop_aguaenc = check_float(resultado_analise[cod][anot]['socioeconomico'][16][0], 2)
+                            let pop_energel = check_float(resultado_analise[cod][anot]['socioeconomico'][17][0], 2)
+                            let pop_esgadq = check_float(resultado_analise[cod][anot]['socioeconomico'][18][0], 2)
+                            let pop_esgindq = check_float(resultado_analise[cod][anot]['socioeconomico'][19][0], 2)
+                            let urb_vpubs = check_float(resultado_analise[cod][anot]['socioeconomico'][20][0], 2)
+
+                            p = '<td>'
+                            if (pop_ocup) 
+                                p += 'População ocupada: ' + pop_ocup + '%<br>'
+                            if (idhm) 
+                                p += 'IDHM (média da região): ' + idhm + '<br>'
+                            if (idhm_renda) 
+                                p += 'IDHM-Renda (média da região): ' + idhm_renda + '<br>'
+                            if (idhm_longv) 
+                                p += 'IDHM-Longevidade (média da região): ' + idhm_longv + '<br>'
+                            if (idhm_educa) 
+                                p += 'IDHM-Educação (média da região): ' + idhm_educa + '<br>'
+                            if (expc_vida) 
+                                p += 'Expectativa de vida (média da região): ' + expc_vida + '<br>'
+                            if (prob_60ans) 
+                                p += 'Probabilidade de alcançar 60 anos (média da região): ' + prob_60ans + '%<br>'
+                            if (exp_anestu) 
+                                p += 'Expectativa de anos de estudo (média da região): ' + exp_anestu + '<br>'
+                            if (renda_pc) 
+                                p += 'Renda per capita: R$ ' + renda_pc + '<br>'
+                            if (sal_tform) 
+                                p += 'Salário trabalho formal (média da região): ' + sal_tform + '<br>'
+                            if (pop_extpob) 
+                                p += 'População em extrema pobreza: ' + pop_extpob + '%<br>'
+                            if (pop_pobre) 
+                                p += 'População em pobreza: ' + pop_pobre + '%<br>'
+                            if (pop_vulpob) 
+                                p += 'População em vulnerabilidade a pobreza: ' + pop_vulpob + '%<br>'
+                            if (tx_analfab15) 
+                                p += 'Taxa de analfabetismo com 15 anos ou mais: ' + tx_analfab15 + '%<br>'
+                            if (ideb_inciais) 
+                                p += 'IDEB - anos iniciais (média da região): ' + ideb_inciais + '<br>'
+                            if (ideb_finais) 
+                                p += 'IDEB - anos finais (média da região): ' + ideb_finais + '<br>'
+                            if (pop_aguaenc) 
+                                p += 'População com água encanada: ' + pop_aguaenc + '%<br>'
+                            if (pop_energel) 
+                                p += 'População com energia elétrica: ' + pop_energel + '%<br>'
+                            if (pop_esgadq) 
+                                p += 'População com esgoto sanitário adequado: ' + pop_esgadq + '%<br>'
+                            if (pop_esgindq) 
+                                p += 'População com esgoto sanitário inadequado: ' + pop_esgindq + '%<br>'
+                            if (urb_vpubs) 
+                                p += 'Urbanização nas vias públicas: ' + urb_vpubs + '%<br>'
+                            p += '</td>'
                         }
 
                         // Inserindo de fato os dados na tabela

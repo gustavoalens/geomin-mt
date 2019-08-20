@@ -2,7 +2,7 @@ function check_float(res, tam){
     if (typeof res.toFixed === 'function'){
         return res.toFixed(tam)
     }
-    return res
+    return null
 }
 
 function jsonCopy(src) {
