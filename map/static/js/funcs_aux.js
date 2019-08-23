@@ -503,3 +503,19 @@ function check_ano_i2ano_f(id_ano_i, id_ano_f){
 $('#error_modal').on('hidden.bs.modal', function(){
     $('#error_modal_text').empty()
 })
+
+
+function get_reg_ids() {
+    let ids = []; // lista dos ids das regiões selecionadas
+
+    // verifica se alguma região foi selecionada
+    if (typeof selected !== 'undefined' && selected.length) {
+
+        // percorre o vetor de regiões selecionadas
+        for (var s in selected) {
+            ids.push(selected[s].values_.pk)
+        }
+    }
+    
+    return ids
+}

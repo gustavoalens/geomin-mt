@@ -458,16 +458,16 @@ $('#fTitulo').submit(function(eventObj) {
     }
 
     if (ok) {
-        var ids = []; // lista dos ids das regiões selecionadas
+        var ids = get_reg_ids(); // lista dos ids das regiões selecionadas
 
-        // verifica se alguma região foi selecionada
-        if (typeof selected !== 'undefined' && selected.length) {
+        // // verifica se alguma região foi selecionada
+        // if (typeof selected !== 'undefined' && selected.length) {
 
-            // percorre o vetor de regiões selecionadas
-            for (var s in selected) {
-                ids.push(selected[s].values_.pk)
-            }
-        }
+        //     // percorre o vetor de regiões selecionadas
+        //     for (var s in selected) {
+        //         ids.push(selected[s].values_.pk)
+        //     }
+        // }
 
         document.getElementById('ids_tit').value = ids.toString(); // ids das regiões selecionadas
         document.getElementById('visao_tit').value = visao.toString(); // tipo de subdivisão que teve região selecionada
@@ -514,7 +514,6 @@ $('#fTitulo').submit(function(eventObj) {
 
 ////## SUBMIT FORM DOWNLOAD ##////
 $('#fDownload').submit(function(eventObj) {
-    var ids = []; // lista dos ids das regiões selecionadas
     event.preventDefault()
     let ok = true
 
@@ -525,32 +524,8 @@ $('#fDownload').submit(function(eventObj) {
     }
 
     if (ok){
-       // verifica se alguma região foi selecionada
-        if (typeof selected !== 'undefined' && selected.length) {
 
-            // percorre o vetor de regiões selecionadas
-            for (var s in selected) {
-
-                // 0-Mesorregiões; 1-Microrregiões; 2-Províncias; 3-Munícipios
-                switch (visao) {
-                    case 0:
-                        ids.push(selected[s].values_.cd_geocme);
-                        break;
-                    case 1:
-                        ids.push(selected[s].values_.cd_geocmi);
-                        break;
-                    case 2:
-                        ids.push(selected[s].values_.cd_geoprv);
-                        break;
-                    case 3:
-                        ids.push(selected[s].values_.cd_geocmu);
-                        break;
-                    default:
-                        ids.push(-1);
-
-                }
-            }
-        }
+        let ids = get_reg_ids() // lista dos ids das regiões selecionadas
 
         // adicionando os valores nos campos hidden para o método GET
         document.getElementById('ids').value = ids.toString();

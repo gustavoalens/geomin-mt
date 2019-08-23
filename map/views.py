@@ -120,11 +120,13 @@ def index(request):
 
                 else:
                     print('Buscando cidades da região selecionada')
-                    ids_regiao = list(map(int, ids.split(',')))
+                    ids_regiao = list(map(int, ids_selecionados.split(',')))
 
                 # cid_aux (dict) auxiliar para acrescentar nome da cidade na tabela
                 # re_ci (list) irá salvar uma lista de ids das cidades contidas na região
                 re_ci, cid_aux = getCidades(ids_regiao, visao)
+
+                print(re_ci)
 
                 # checando os campos selecionados para pesquisa
                 if 'dm' in request.GET: # caso Demográfico esteja marcado
@@ -986,7 +988,7 @@ def getCidades(ids_regiao, visao):
             re_ci = cidades.objects.filter(geom__contained=reg['geom__union'])
 
         cid_aux = dict(list(re_ci.values_list('id', 'nome'))) # auxiliar para acrescentar nome da cidade na tabela
-        re_ci = list(re_ci.values_list('id')) # objeto que irá salvar uma lista de ids das cidades contidas na região
+        re_ci = list(re_ci.values_list('id', flat=True)) # objeto que irá salvar uma lista de ids das cidades contidas na região
 
     return re_ci, cid_aux
 
