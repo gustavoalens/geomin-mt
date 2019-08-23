@@ -497,7 +497,7 @@ function check_ano_i2ano_f(id_ano_i, id_ano_f){
     let obj_ano_f = document.getElementById(id_ano_f)
     let ano_i = parseInt(obj_ano_i.options[obj_ano_i.selectedIndex].value)
     let ano_f = parseInt(obj_ano_f.options[obj_ano_f.selectedIndex].value)
-    return ano_f >= ano_i
+    return ano_i > ano_f
 }
 
 $('#error_modal').on('hidden.bs.modal', function(){
