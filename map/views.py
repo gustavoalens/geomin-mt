@@ -201,15 +201,15 @@ def index(request):
                         pf = list()
                         pj = list()
                         for a in ar:
-                            pf.append(str(a.pessoa_fisica))
-                            pj.append(str(a.pessoa_juridica))
+                            pf.append(str(a.pessoa_fisica or ''))
+                            pj.append(str(a.pessoa_juridica or ''))
                         df_ar = pd.DataFrame(list(ar.values()))
                         df_ar.drop(columns=['titulos_minerarios_id'], inplace=True)
                         df_ar.rename(columns={'pessoa_fisica_id': 'pessoa_fisica', 'pessoa_juridica_id': 'pessoa_juridica'}, inplace=True)
                         df_ar['subs'] = df_ar['subs'].map(lambda s: ct.d_subs[s])
                         df_ar['unidade'] = df_ar['unidade'].map(lambda un: ct.d_un_ab[un])
-                        df_ar['pessoa_fisica'] = pf
-                        df_ar['pessoa_juridica'] = pj
+                        df_ar['pessoa_fisica'] = pf or ''
+                        df_ar['pessoa_juridica'] = pj or ''
 
                     else:
                         df_ar = pd.DataFrame()

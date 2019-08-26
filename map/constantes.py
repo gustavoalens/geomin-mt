@@ -30,7 +30,7 @@ d_opcs = {
 }
 
 d_atv_ec = {
-    0: 'Sem registro',
+    0: '',
     1: 'Administração, defesa, educação e saúde públicas e seguridade social',
     2: 'Agricultura, inclusive apoio à agricultura e a pós colheita',
     3: 'Comércio e reparação de veículos automotores e motocicletas',
@@ -44,7 +44,7 @@ d_atv_ec = {
 }
 
 d_fase = {
-    0: 'DADO NÃO CADASTRADO', 1: 'AUTORIZAÇÃO DE PESQUISA', 2: 'CONCESSO DE LAVRA',
+    0: '', 1: 'AUTORIZAÇÃO DE PESQUISA', 2: 'CONCESSO DE LAVRA',
     3: 'DISPONIBILIDADE', 4: 'LAVRA GARIMPEIRA', 5: 'LICENCIAMENTO',
     6: 'REGISTRO DE EXTRAÇÃO', 7: 'REQUERIMENTO DE LAVRA', 8: 'REQUERIMENTO DE LAVRA GARIMPEIRA',
     9: 'REQUERIMENTO DE LICENCIAMENTO', 10: 'REQUERIMENTO DE PESQUISA',
@@ -52,7 +52,7 @@ d_fase = {
     }
 
 t_fase = (
-    (0, 'DADO NÃO CADASTRADO'),
+    (0, ''),
     (1, 'AUTORIZAO DE PESQUISA'), (2, 'CONCESSO DE LAVRA'), (3, 'DISPONIBILIDADE'),
     (4, 'LAVRA GARIMPEIRA'), (5, 'LICENCIAMENTO'), (6, 'REGISTRO DE EXTRAO'),
     (7, 'REQUERIMENTO DE LAVRA'), (8, 'REQUERIMENTO DE LAVRA GARIMPEIRA'),
@@ -62,7 +62,7 @@ t_fase = (
 
 # Dicionário p/ substratos da tabela do titulos_minerarios
 d_subs_tm = {
-    0: 'DADO NÃO CADASTRADO', 1: 'AMETISTA', 2: 'AREIA', 3: 'AREIA LAVADA',
+    0: '', 1: 'AMETISTA', 2: 'AREIA', 3: 'AREIA LAVADA',
     4: 'ARENITO', 5: 'ARGILA', 6: 'BASALTO', 7: 'BRITA DE GRANITO',
     8: 'CALCEDÔNIA', 9: 'CALCÁRIO', 10: 'CALCÁRIO CALCÍTICO',
     11: 'CALCÁRIO DOLOMÍTICO', 12: 'CALCÁRIO INDUSTRIAL', 13: 'CASCALHO',
@@ -384,7 +384,7 @@ t_atv_min = (
 )
 
 t_atv_ec = (
-    (0, 'Sem registro'),
+    (0, ''),
     (1, 'Administração, defesa, educação e saúde públicas e seguridade social'),
     (2, 'Agricultura, inclusive apoio à agricultura e a pós colheita'),
     (3, 'Comércio e reparação de veículos automotores e motocicletas'),
