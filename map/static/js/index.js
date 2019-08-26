@@ -345,8 +345,14 @@ map.on('singleclick', function(evt) {
 
                     // Adicionando o código da tabela ao Pop-up
                     content.innerHTML = resu_html
-                    content.scrollTop = content.scrollHeight;
-                    overlay.setPosition(evt.coordinate);// posicionando overlay no ponto clicado
+                    content.scrollTop = content.scrollHeight
+                    overlay.setPosition(evt.coordinate)// posicionando overlay no ponto clicado
+                }
+
+                else if (dados_apr){ // caso pesquisa feita de apresentação de dados
+                    content.innerHTML = 'Código IBGE: ' + cod + ' - Nome região: ' + nome
+                    content.scrollTop = content.scrollHeight
+                    overlay.setPosition(evt.coordinate)
                 }
             }
         }

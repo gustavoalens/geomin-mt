@@ -880,8 +880,6 @@ def index(request):
             form_titulos = FormTitulo()
             form_analise = FormAnalisar()
 
-
-        # deletar? ##
         pesq = None
         if 'dados' in request.GET.keys():
             pesq = ct.d_opcs[request.GET['dados']]
