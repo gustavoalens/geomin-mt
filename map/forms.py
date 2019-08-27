@@ -7,6 +7,12 @@ from . import constantes as ct
 from crispy_forms.helper import FormHelper, Layout
 from crispy_forms.layout import Div, Field, Row
 
+class FormSubs(forms.Form):
+    subs = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs[1:], required=False)
+
+
+FormsetSubs = forms.formset_factory(FormSubs, extra=0)
+
 
 class FormConsulta(forms.Form):
 
@@ -68,17 +74,12 @@ class FormConsulta(forms.Form):
 
     # Campos de escolha para Arrecadação
     ar = forms.BooleanField(label='Arrecadação', required=False)
-    ar_subs = forms.ChoiceField(label='Substrato', choices=ct.t_subs)
+    # ar_subs = forms.ChoiceField(label='Substrato', choices=ct.t_subs)
+    ar_subs = FormsetSubs(prefix='far_subs')
 
     # Campos para filtragem dos anos na busca
     dw_ano_i = forms.ChoiceField(label='Ano inicial', choices=ct.ano_chs())
     dw_ano_f = forms.ChoiceField(label='Ano final', choices=ct.ano_chs())
-
-class FormSubs(forms.Form):
-    subs = forms.ChoiceField(label='Tipo de substrato', choices=ct.t_subs[1:], required=False)
-
-
-FormsetSubs = forms.formset_factory(FormSubs, extra=0)
 
 
 class FormUsos(forms.Form):

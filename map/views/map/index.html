@@ -123,7 +123,13 @@
 
                                     {{ form_dados.ar|as_crispy_field }}
                                     <div class="scrolling-box" id="arrecadacao" style="display:none; margin-left:1.2vh">
-                                        {{ form_dados.ar_subs|as_crispy_field }}
+                                        {{ form_dados.ar_subs.management_form|crispy }}
+
+                                        <div id="formset_ar_subs">
+                                        </div>
+                                        
+                                        <input type="button" class="btn" style="margin-bottom:1.5rem" value="Adicionar Substrato" id="add_ar_sub">
+
                                     </div>
                                     <div class="row">
                                         <div class="col-6">
@@ -340,6 +346,14 @@
             </div>
         </div>
 
+        <div id="empty_formset_ar_subs" style="display:none;">
+            <div id="box_far_subs__prefix__" class="row d-flex justify-content-start">
+                {{ form_dados.ar_subs.empty_form|crispy }}
+                <div class="align-self-end">
+                    <input type="button" class="btn btn-danger" value="X" id="rm_ar_sub" style="margin-bottom: 1rem;">
+                </div>
+            </div>
+        </div>
 
         <div id="empty_formset_subs" style="display:none;">
             <div id="box_fsubs__prefix__" class="row d-flex justify-content-start">

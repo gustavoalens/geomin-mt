@@ -105,8 +105,6 @@ def index(request):
             ## caso form de Dados for chamado ##
             if form_selecionado == 0:
                 print('Entrou form Dados')
-                dm = ec = sc = ar = None
-                df_dm = df_ec = df_sc = df_ar = None
                 dfs = list()
                 # Recebendo os parametros passados pelo método GET
                 ids_selecionados = request.GET['ids'] # código das regiões selecionadas
@@ -193,27 +191,17 @@ def index(request):
                     ar = cfem.objects.filter(ano__in=anos)
                     if re_ci:
                         ar = ar.filter(cidade__id__in=re_ci)
-                    subs = int(request.GET['ar_subs'])
-                    if subs != 0:  # se existe filtro pro tipo substrato
-                        ar = ar.filter(subs=subs)
-
-                    if ar:
-                        pf = list()
-                        pj = list()
-                        for a in ar:
-                            pf.append(str(a.pessoa_fisica or ''))
-                            pj.append(str(a.pessoa_juridica or ''))
-                        df_ar = pd.DataFrame(list(ar.values()))
-                        df_ar.drop(columns=['titulos_minerarios_id'], inplace=True)
-                        df_ar.rename(columns={'pessoa_fisica_id': 'pessoa_fisica', 'pessoa_juridica_id': 'pessoa_juridica'}, inplace=True)
-                        df_ar['subs'] = df_ar['subs'].map(lambda s: ct.d_subs[s])
-                        df_ar['unidade'] = df_ar['unidade'].map(lambda un: ct.d_un_ab[un])
-                        df_ar['pessoa_fisica'] = pf or ''
-                        df_ar['pessoa_juridica'] = pj or ''
-
-                    else:
-                        df_ar = pd.DataFrame()
-
+                    # subs = int(request.GET['ar_subs'])
+                    subs = list(set(list(map(int, request.GET['ar_subs'].split(',')))))
+                    # ToDo: Criar uma pd.Series para cada substrato
+                    df_ar = pd.DataFrame(columns=['cidade_id', 'ano'])
+                    for sub in subs:
+                        ar_ = ar.filter(subs=sub).values('cidade_id', 'ano').order_by('cidade_id', 'ano')\
+                            .annotate(arrec=Sum('valor'))
+                        ar_ = list(ar_.values_list('cidade_id', 'arrec', 'ano'))
+                        df = pd.DataFrame(ar_, columns=['cidade_id', 'arrec_' + ct.d_subs[sub], 'ano'])
+                        df_ar = pd.merge(df_ar, df, how='outer', on=['cidade_id', 'ano'])
+ 
 
                     if not df_ar.empty:
                         dfs.append(df_ar) # acrescentando na lista de todas tabelas selecionadas

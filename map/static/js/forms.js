@@ -348,11 +348,18 @@ $('#id_opc_arr_2').click(function(){
 function add_opc_titulos(varv){
     let fmset = varv + 's'
     let tag = 'f' + fmset
+    let varv_aux = varv + 's'
+    
+    if (varv == 'ar_sub'){
+        varv_aux = 'subs'
+    }
 
     let form_idx = $(`#id_${tag}-TOTAL_FORMS`).val()
     let empf = $(`#empty_formset_${fmset}`)
+    console.log(tag)
+    console.log(varv_aux)
     $(`#formset_${fmset}`).append(empf.html()
-        .replace(`name="${tag}-__prefix__-${fmset}"`, `name="${tag}-${varv}"`)
+        .replace(`name="${tag}-__prefix__-${varv_aux}"`, `name="${tag}-${varv}"`)
         .replace(`name="${tag}-__prefix__-rep"`, `name="${tag}-rep"`)
         .replace(/__prefix__/g, form_idx)
         .replace(`rm_${varv}`, `rm_${varv}` + form_idx)
@@ -385,6 +392,10 @@ function add_opc_titulos(varv){
 
     // console.log($('#id_fvars-0-vars option[value="3"]').remove())
 }
+
+$('#add_ar_sub').click(function(){
+    add_opc_titulos('ar_sub')
+})
 
 
 $('#add_sub').click(function(){
@@ -517,10 +528,29 @@ $('#fDownload').submit(function(eventObj) {
     event.preventDefault()
     let ok = true
 
+    let data = $('#fDownload').serialize()
+    let subs = []
     if (check_ano_i2ano_f('id_dw_ano_i', 'id_dw_ano_f')){
         $('#error_modal_text').append('Ano inicial da pesquisa deve ser menor ou igual ano final')
         $('#error_modal').modal('show')
         ok = false
+    }
+
+    if ($('#id_ar').is(':checked')){
+        // prepara o agrupamento das variáveis escolhidas
+        $('[name=far_subs-ar_sub]').each(function(){
+            let sub = $(this).val()
+            if (sub > 0){
+                subs.push(sub)
+            }
+        })
+
+        // verifica se nenhuma variável foi escolhida para pesquisa
+        if (!subs.length){
+            $('#error_modal_text').append('É necessário selecionar ao menos uma variável a ser apresentada')
+            $('#error_modal').modal('show')
+            ok = false
+        }
     }
 
     if (ok){
@@ -532,10 +562,15 @@ $('#fDownload').submit(function(eventObj) {
         document.getElementById('visao').value = visao.toString();
         $(".loader").css("display", "block");
 
+        subs = '&ar_subs=' + subs.toString()
+
+        data = data.replace(/&far_subs-ar_sub/g, '') + subs
+        console.log(data)
+
         $.ajax({
             type: 'GET',
             url: '',
-            data: $('#fDownload').serialize(),
+            data: data,
             content_type: 'text/csv',
             success: function(response, status, xhr) {
 
